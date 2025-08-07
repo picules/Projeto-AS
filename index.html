@@ -2,160 +2,487 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Sistema de Dívidas - Responsivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Dívidas com Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #f0f2f5;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f5;
+      margin: 0;
       padding: 20px;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
     }
-    h2 { text-align: center; }
 
-    input, button, select {
-      width: 100%;
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input, select, button {
+      flex: 1 1 150px;
       padding: 10px;
-      margin: 5px 0 15px 0;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
 
-    .item {
-      border-bottom: 1px solid #ccc;
-      padding: 10px 0;
-    }
-
-    .btn {
-      background: #3498db;
+    button {
+      background: #007bff;
       color: white;
       border: none;
       cursor: pointer;
     }
 
-    .btn-danger {
-      background: #e74c3c;
+    button:hover {
+      background: #0056b3;
     }
 
-    .paid {
-      text-decoration: line-through;
-      color: green;
+    .devedor {
+      background: #f8f9fa;
+      padding: 15px;
+      border-left: 5px solid #007bff;
+      border-radius: 8px;
+      margin-bottom: 15px;
     }
 
-    .small {
-      font-size: 12px;
-      color: gray;
+    .devedor strong {
+      font-size: 18px;
     }
 
-    @media screen and (max-width: 600px) {
-      .container { margin: 10px; }
+    .info {
+      font-size: 14px;
+      color: #555;
+      margin: 5px 0;
+    }
+
+    .btn-devendo, .btn-pago, .btn-excluir {
+      padding: 8px 12px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .btn-devendo {
+      background-color: #000;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-pago {
+      background-color: #28a745;
+      color: white;
+      cursor: default;
+    }
+
+    .btn-excluir {
+      background-color: #dc3545;
+      color: white;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .btn-excluir:hover {
+      background-color: #c82333;
+    }
+
+    .apagada {
+      color: #888;
+      font-style: italic;
+    }
+
+    #login-section {
+      transition: opacity 0.5s ease;
+    }
+
+    #logado-msg {
+      font-size: 20px;
+      color: #007bff;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #btn-sair {
+      background: #dc3545;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 6px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #btn-sair:hover {
+      background: #b02a37;
+    }
+
+    .info-regras {
+      background:#f0f8ff;
+      padding:10px;
+      margin-bottom:15px;
+      border:1px solid #007bff;
+      border-radius:6px;
+      font-size:14px;
+      color:#004085;
+    }
+
+    /* Responsividade simples */
+    @media (max-width: 480px) {
+      .form-group {
+        flex-direction: column;
+      }
+      input, select, button {
+        flex: 1 1 100%;
+      }
+      #logado-msg {
+        flex-direction: column;
+        font-size: 18px;
+        gap: 8px;
+      }
+      .btn-excluir {
+        margin-left: 0;
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="loginDiv">
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="Nome de usuário">
-    <input type="password" id="password" placeholder="Senha">
-    <button class="btn" onclick="login()">Entrar</button>
-  </div>
 
-  <div class="container" id="appDiv" style="display:none;">
-    <h2>Controle de Dívidas</h2>
-    <div>
-      <input type="text" id="nome" placeholder="Nome do cliente">
-      <input type="number" id="valor" placeholder="Valor da dívida">
-      <button class="btn" onclick="adicionarDivida()">Adicionar</button>
+  <div class="container">
+    <h2>Sistema de Controle de Dívidas</h2>
+
+    <div id="login-section">
+      <div class="form-group">
+        <select id="funcionario">
+          <option value="">-- Selecione Funcionário --</option>
+          <option value="Karol">Karol</option>
+          <option value="Rodrigo">Rodrigo</option>
+          <option value="Gabriela">Gabriela</option>
+          <option value="Vagner">Vagner (ADM)</option>
+        </select>
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="acessarSistema()">Entrar</button>
+      </div>
+
+      <div class="form-group" style="margin-top:-10px;">
+        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
+      </div>
     </div>
-    <div id="lista"></div>
-    <p class="small">* Somente o administrador (Vagner) pode excluir.</p>
+
+    <div id="logado-msg" style="display:none;">
+      <span></span>
+      <button id="btn-sair" onclick="sair()">Sair</button>
+    </div>
+
+    <div id="formulario" style="display:none;">
+      <div class="form-group">
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
+        <button onclick="adicionarDivida()">Adicionar Dívida</button>
+      </div>
+    </div>
+
+    <div class="info-regras"><br></div>
+
+    <div id="lista" style="margin-top:20px;"></div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <!-- Firebase e App JS -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
       authDomain: "adrjb-99601.firebaseapp.com",
       projectId: "adrjb-99601",
-      storageBucket: "adrjb-99601.appspot.com",
+      storageBucket: "adrjb-99601.firebasestorage.app",
       messagingSenderId: "688129341856",
-      appId: "1:688129341856:web:c0a378171329e52c038cc5"
+      appId: "1:688129341856:web:c0a378171329e52c038cc5",
+      measurementId: "G-2BXZJ9LETC"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    let usuarioLogado = "";
+    const senhas = {
+      Karol: "14",
+      Rodrigo: "@4",
+      Gabriela: "66",
+      Vagner: "admin"
+    };
 
-    function login() {
-      const user = document.getElementById('username').value.trim().toLowerCase();
-      const pass = document.getElementById('password').value.trim();
+    let devedores = [];
+    let usuarioAtual = "";
 
-      if (!user) return alert("Informe um nome de usuário");
+    const loginSection = document.getElementById("login-section");
+    const logadoMsg = document.getElementById("logado-msg");
+    const formulario = document.getElementById("formulario");
+    const lista = document.getElementById("lista");
+    const funcionarioSelect = document.getElementById("funcionario");
+    const senhaInput = document.getElementById("senha");
+    const lembrarSenhaCheckbox = document.getElementById("lembrarSenha");
+    const nomeClienteInput = document.getElementById("nomeCliente");
+    const valorInput = document.getElementById("valor");
 
-      usuarioLogado = user;
-
-      document.getElementById('loginDiv').style.display = 'none';
-      document.getElementById('appDiv').style.display = 'block';
-    }
-
-    function adicionarDivida() {
-      const nome = document.getElementById('nome').value.trim();
-      const valor = document.getElementById('valor').value.trim();
-
-      if (!nome || !valor) return alert("Preencha todos os campos");
-
-      const novaRef = db.ref('dividas').push();
-      novaRef.set({
-        nome: nome,
-        valor: parseFloat(valor),
-        pago: false
-      });
-
-      document.getElementById('nome').value = "";
-      document.getElementById('valor').value = "";
-    }
-
-    db.ref('dividas').on('value', (snapshot) => {
-      const dados = snapshot.val();
-      const lista = document.getElementById('lista');
-      lista.innerHTML = "";
-
-      for (let id in dados) {
-        const item = dados[id];
-        const div = document.createElement('div');
-        div.className = 'item';
-
-        const status = item.pago ? 'paid' : '';
-        div.innerHTML = `
-          <strong class="${status}">${item.nome}</strong> - 
-          <span class="${status}">R$ ${item.valor.toFixed(2)}</span><br>
-          <button class="btn" onclick="marcarPago('${id}')">Marcar como pago</button>
-          ${usuarioLogado === 'vagner' ? `<button class="btn btn-danger" onclick="excluir('${id}')">Excluir</button>` : ''}
-        `;
-
-        lista.appendChild(div);
-      }
+    funcionarioSelect.addEventListener("change", () => {
+      const sel = funcionarioSelect.value;
+      senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
     });
 
-    function marcarPago(id) {
-      db.ref('dividas/' + id).update({ pago: true });
+    function mostrarLogin(mostrar) {
+      loginSection.style.display = mostrar ? "block" : "none";
     }
-
-    function excluir(id) {
-      if (confirm("Tem certeza que deseja excluir?")) {
-        db.ref('dividas/' + id).remove();
+    function mostrarLogadoMsg(mostrar) {
+      if (mostrar) {
+        logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
+        logadoMsg.style.display = "flex";
+      } else {
+        logadoMsg.style.display = "none";
       }
     }
+    function mostrarFormulario(mostrar) {
+      formulario.style.display = mostrar ? "block" : "none";
+    }
+    function mostrarLista(mostrar) {
+      lista.style.display = mostrar ? "block" : "none";
+    }
+
+    window.acessarSistema = function() {
+      const funcionario = funcionarioSelect.value;
+      const senha = senhaInput.value;
+
+      if (!funcionario || senha !== senhas[funcionario]) {
+        alert("Senha incorreta!");
+        return;
+      }
+      usuarioAtual = funcionario;
+
+      if (lembrarSenhaCheckbox.checked) {
+        localStorage.setItem(`senha_${usuarioAtual}`, senhaInput.value);
+      } else {
+        localStorage.removeItem(`senha_${usuarioAtual}`);
+      }
+
+      mostrarLogin(false);
+      mostrarLogadoMsg(true);
+      mostrarFormulario(true);
+      mostrarLista(true);
+
+      iniciarListenerRealtime();
+    };
+
+    window.sair = function() {
+      usuarioAtual = "";
+      mostrarLogin(true);
+      mostrarLogadoMsg(false);
+      mostrarFormulario(false);
+      mostrarLista(false);
+      senhaInput.value = "";
+      funcionarioSelect.value = "";
+      lista.innerHTML = "";
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
+
+    function atualizarLista() {
+      const agora = new Date();
+
+      // Apagar dívidas removidas pelo Vagner após 72 horas
+      devedores = devedores.filter(d => {
+        if (d.removida && d.apagadaPorVagner) {
+          const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
+          if (horasPassadas >= 72) {
+            if (d.id) {
+              deleteDoc(doc(db, "dividas", d.id));
+            }
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // Marcar dívidas >90 dias como removidas (remoção automática)
+      devedores.forEach(async d => {
+        const dataDevendo = new Date(d.dataDevendo);
+        const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
+        if (diasPassados > 90 && !d.removida) {
+          const docRef = doc(db, "dividas", d.id);
+          await updateDoc(docRef, {
+            removida: true,
+            apagadaPorVagner: false,
+            dataApagada: new Date().toISOString(),
+            motivoExclusao: "Remoção automática após 90 dias"
+          });
+        }
+      });
+
+      lista.innerHTML = "";
+
+      devedores.forEach((d, i) => {
+        if (d.removida) {
+          const div = document.createElement("div");
+          div.className = "devedor apagada";
+          div.innerHTML = `
+            Msg apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario}<br>
+            ${new Date(d.dataApagada).toLocaleString()}<br>
+            <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
+          `;
+          lista.appendChild(div);
+        } else {
+          const div = document.createElement("div");
+          div.className = "devedor";
+          div.innerHTML = `
+            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}
+            <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+            ${
+              d.pago
+                ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou}<br>
+${new Date(d.dataPago).toLocaleString()}</button>`
+                : `<button class="btn-devendo" onclick="marcarPago(${i})">Devendo</button>`
+            }
+            ${
+              (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+                ? `<button class="btn-excluir" onclick="excluir(${i})">Excluir</button>`
+                : ""
+            }
+          `;
+          lista.appendChild(div);
+        }
+      });
+    }
+
+    async function iniciarListenerRealtime() {
+      const dividasCol = collection(db, "dividas");
+      const q = query(dividasCol, orderBy("dataDevendo", "desc"));
+
+      onSnapshot(q, (querySnapshot) => {
+        devedores = [];
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          devedores.push({
+            id: docSnap.id,
+            nome: data.nome,
+            valor: data.valor,
+            funcionario: data.funcionario,
+            dataDevendo: data.dataDevendo,
+            pago: data.pago,
+            quemPagou: data.quemPagou,
+            dataPago: data.dataPago,
+            removida: data.removida,
+            apagadaPorVagner: data.apagadaPorVagner,
+            dataApagada: data.dataApagada,
+            motivoExclusao: data.motivoExclusao || ""
+          });
+        });
+        atualizarLista();
+      });
+    }
+
+    window.adicionarDivida = async function() {
+      const nome = nomeClienteInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      const dataHora = new Date().toISOString();
+
+      if (!nome || isNaN(valor) || valor <= 0) {
+        alert("Preencha nome e valor corretamente!");
+        return;
+      }
+      if (devedores.filter(d => !d.removida).length >= 100) {
+        alert("Limite de 100 clientes ativos atingido.");
+        return;
+      }
+
+      await addDoc(collection(db, "dividas"), {
+        nome,
+        valor,
+        funcionario: usuarioAtual,
+        dataDevendo: dataHora,
+        pago: false,
+        quemPagou: "",
+        dataPago: "",
+        removida: false,
+        apagadaPorVagner: false,
+        dataApagada: "",
+        motivoExclusao: ""
+      });
+
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
+
+    window.marcarPago = async function(index) {
+      const divida = devedores[index];
+      if (divida.pago || divida.removida) return;
+
+      const docRef = doc(db, "dividas", divida.id);
+      await updateDoc(docRef, {
+        pago: true,
+        quemPagou: usuarioAtual,
+        dataPago: new Date().toISOString(),
+      });
+    };
+
+    window.excluir = async function(index) {
+      const divida = devedores[index];
+      if (!divida) return;
+
+      if (usuarioAtual !== divida.funcionario && usuarioAtual !== "Vagner") {
+        alert("Só quem anotou ou Vagner pode excluir.");
+        return;
+      }
+
+      const docRef = doc(db, "dividas", divida.id);
+
+      if (usuarioAtual === "Vagner") {
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: true,
+          dataApagada: new Date().toISOString(),
+          motivoExclusao: "Excluído pelo ADM Vagner"
+        });
+      } else {
+        // Usuário autor deve informar motivo (prompt)
+        const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
+        if (!motivo) {
+          alert("Motivo é obrigatório.");
+          return;
+        }
+        if (motivo.length > 100) {
+          alert("Motivo deve ter até 100 caracteres.");
+          return;
+        }
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: false,
+          dataApagada: new Date().toISOString(),
+          motivoExclusao: motivo
+        });
+      }
+    };
   </script>
+
 </body>
 </html>
