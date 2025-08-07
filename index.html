@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Controle de Dívidas com Firebase Realtime Listener</title>
+
+
+
+  <meta charset="UTF-8">
+  <title>Controle de Dívidas com Firebase</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -10,42 +10,47 @@
       margin: 0;
       padding: 20px;
     }
+
     h2 {
       text-align: center;
       color: #333;
     }
+
     .container {
       max-width: 700px;
       margin: auto;
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+
     .form-group {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 15px;
     }
-    .form-group input,
-    .form-group select,
-    .form-group button {
+
+    input, select, button {
       flex: 1 1 150px;
       padding: 10px;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-    .form-group button {
+
+    button {
       background: #007bff;
       color: white;
       border: none;
       cursor: pointer;
     }
-    .form-group button:hover {
+
+    button:hover {
       background: #0056b3;
     }
+
     .devedor {
       background: #f8f9fa;
       padding: 15px;
@@ -53,16 +58,18 @@
       border-radius: 8px;
       margin-bottom: 15px;
     }
+
     .devedor strong {
       font-size: 18px;
     }
+
     .info {
       font-size: 14px;
       color: #555;
       margin: 5px 0;
     }
-    .devendo-btn,
-    .pago-btn {
+
+    .btn-devendo, .btn-pago, .btn-excluir {
       padding: 8px 12px;
       margin-top: 5px;
       border: none;
@@ -70,61 +77,51 @@
       font-weight: bold;
       font-size: 14px;
     }
-    .devendo-btn {
+
+    .btn-devendo {
       background-color: #000;
       color: white;
       cursor: pointer;
     }
-    .pago-btn {
+
+    .btn-pago {
       background-color: #28a745;
       color: white;
       cursor: default;
     }
-    .excluir-btn {
-      background: #dc3545;
+
+    .btn-excluir {
+      background-color: #dc3545;
       color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
       margin-left: 10px;
       cursor: pointer;
     }
-    .excluir-btn:hover {
-      background: #c82333;
+
+    .btn-excluir:hover {
+      background-color: #c82333;
     }
-    #formulario {
-      display: none;
-    }
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-      margin-top: -10px;
-      margin-bottom: 10px;
-    }
-    .checkbox-group input {
-      margin-right: 5px;
-    }
+
     .apagada {
       color: #888;
       font-style: italic;
     }
+
     #login-section {
       transition: opacity 0.5s ease;
     }
+
     #logado-msg {
       font-size: 20px;
       color: #007bff;
       font-weight: bold;
       text-align: center;
       margin-bottom: 15px;
-      animation: zoomIn 0.6s ease forwards;
-      transform-origin: center;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 15px;
     }
+
     #btn-sair {
       background: #dc3545;
       border: none;
@@ -134,38 +131,68 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.3s ease;
     }
+
     #btn-sair:hover {
       background: #b02a37;
     }
-    @keyframes zoomIn {
-      0% {
-        transform: scale(0.3);
-        opacity: 0;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+
+    .info-regras {
+      background:#f0f8ff; 
+      padding:10px; 
+      margin-bottom:15px; 
+      border:1px solid #007bff; 
+      border-radius:6px; 
+      font-size:14px; 
+      color:#004085;
     }
   </style>
 
-  <!-- Firebase SDKs -->
+
+  <div class="container">
+    <h2>Sistema de Controle de Dívidas</h2>
+
+    <div id="login-section">
+      <div class="form-group">
+        <select id="funcionario">
+          <option value="">-- Selecione Funcionário --</option>
+          <option value="Karol">Karol</option>
+          <option value="Rodrigo">Rodrigo</option>
+          <option value="Gabriela">Gabriela</option>
+          <option value="Vagner">Vagner (ADM)</option>
+        </select>
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="acessarSistema()">Entrar</button>
+      </div>
+
+      <div class="form-group" style="margin-top:-10px;">
+        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
+      </div>
+    </div>
+
+    <div id="logado-msg" style="display:none;">
+      <span></span>
+      <button id="btn-sair" onclick="sair()">Sair</button>
+    </div>
+
+    <div id="formulario" style="display:none;">
+      <div class="form-group">
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
+        <button onclick="adicionarDivida()">Adicionar Dívida</button>
+      </div>
+    </div>
+
+    <div class="info-regras"><br>
+
+
+    <div id="lista" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- Firebase e App JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-analytics.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      updateDoc,
-      deleteDoc,
-      doc,
-      query,
-      orderBy,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
@@ -178,14 +205,13 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     const senhas = {
       Karol: "14",
       Rodrigo: "@4",
       Gabriela: "66",
-      Vagner: "admin",
+      Vagner: "admin"
     };
 
     let devedores = [];
@@ -263,13 +289,12 @@
 
     function atualizarLista() {
       const agora = new Date();
-      lista.innerHTML = "";
 
-      // Remover mensagens apagadas há mais de 72 horas
+      // Apagar dívidas removidas pelo Vagner após 72 horas
       devedores = devedores.filter(d => {
         if (d.removida && d.apagadaPorVagner) {
-          const apagadaHaHoras = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
-          if (apagadaHaHoras >= 72) {
+          const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
+          if (horasPassadas >= 72) {
             if (d.id) {
               deleteDoc(doc(db, "dividas", d.id));
             }
@@ -279,16 +304,34 @@
         return true;
       });
 
+      // Marcar dívidas >90 dias como removidas (remoção automática)
+      devedores.forEach(async d => {
+        const dataDevendo = new Date(d.dataDevendo);
+        const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
+        if (diasPassados > 90 && !d.removida) {
+          const docRef = doc(db, "dividas", d.id);
+          await updateDoc(docRef, {
+            removida: true,
+            apagadaPorVagner: false,
+            dataApagada: new Date().toISOString(),
+            motivoExclusao: "Remoção automática após 90 dias"
+          });
+        }
+      });
+
+      lista.innerHTML = "";
+
       devedores.forEach((d, i) => {
-        if (d.removida && d.apagadaPorVagner) {
+        if (d.removida) {
           const div = document.createElement("div");
           div.className = "devedor apagada";
           div.innerHTML = `
-            Msg apagada por Vagner<br>
-            ${new Date(d.dataApagada).toLocaleString()}
+            Msg apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario}<br>
+            ${new Date(d.dataApagada).toLocaleString()}<br>
+            <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
           `;
           lista.appendChild(div);
-        } else if (!d.removida) {
+        } else {
           const div = document.createElement("div");
           div.className = "devedor";
           div.innerHTML = `
@@ -296,14 +339,13 @@
             <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
             ${
               d.pago
-                ? `<button class="pago-btn">Pago por ${d.quemPagou}<br>
+                ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou}<br>
 ${new Date(d.dataPago).toLocaleString()}</button>`
-                : `<button class="devendo-btn" onclick="marcarPago(${i})">Devendo<br>
-${new Date(d.dataDevendo).toLocaleString()}</button>`
+                : `<button class="btn-devendo" onclick="marcarPago(${i})">Devendo</button>`
             }
             ${
               (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
-                ? `<button class="excluir-btn" onclick="excluir(${i})">Excluir</button>`
+                ? `<button class="btn-excluir" onclick="excluir(${i})">Excluir</button>`
                 : ""
             }
           `;
@@ -318,7 +360,7 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
 
       onSnapshot(q, (querySnapshot) => {
         devedores = [];
-        querySnapshot.forEach((docSnap) => {
+        querySnapshot.forEach(docSnap => {
           const data = docSnap.data();
           devedores.push({
             id: docSnap.id,
@@ -331,7 +373,8 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
             dataPago: data.dataPago,
             removida: data.removida,
             apagadaPorVagner: data.apagadaPorVagner,
-            dataApagada: data.dataApagada
+            dataApagada: data.dataApagada,
+            motivoExclusao: data.motivoExclusao || ""
           });
         });
         atualizarLista();
@@ -343,7 +386,7 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
       const valor = parseFloat(valorInput.value);
       const dataHora = new Date().toISOString();
 
-      if (!nome || isNaN(valor)) {
+      if (!nome || isNaN(valor) || valor <= 0) {
         alert("Preencha nome e valor corretamente!");
         return;
       }
@@ -363,11 +406,11 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
         removida: false,
         apagadaPorVagner: false,
         dataApagada: "",
+        motivoExclusao: ""
       });
 
       nomeClienteInput.value = "";
       valorInput.value = "";
-      // A atualização será automática pelo listener realtime
     };
 
     window.marcarPago = async function(index) {
@@ -380,7 +423,6 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
         quemPagou: usuarioAtual,
         dataPago: new Date().toISOString(),
       });
-      // A atualização será automática pelo listener realtime
     };
 
     window.excluir = async function(index) {
@@ -399,52 +441,81 @@ ${new Date(d.dataDevendo).toLocaleString()}</button>`
           removida: true,
           apagadaPorVagner: true,
           dataApagada: new Date().toISOString(),
+          motivoExclusao: "Excluído pelo ADM Vagner"
         });
       } else {
-        await deleteDoc(docRef);
+        // Usuário autor deve informar motivo (prompt)
+        const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
+        if (!motivo) {
+          alert("Motivo é obrigatório.");
+          return;
+        }
+        if (motivo.length > 100) {
+          alert("Motivo deve ter até 100 caracteres.");
+          return;
+        }
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: false,
+          dataApagada: new Date().toISOString(),
+          motivoExclusao: motivo
+        });
       }
-      // A atualização será automática pelo listener realtime
     };
-
   </script>
-</head>
-<body>
-  <div class="container">
-    <h2>Sistema de Controle de Dívidas</h2>
 
-    <div id="login-section">
-      <div class="form-group">
-        <select id="funcionario">
-          <option value="">-- Selecione --</option>
-          <option value="Karol">Karol</option>
-          <option value="Rodrigo">Rodrigo</option>
-          <option value="Gabriela">Gabriela</option>
-          <option value="Vagner">Vagner</option>
-        </select>
-        <input type="password" id="senha" placeholder="Senha" />
-        <button onclick="acessarSistema()">Entrar</button>
-      </div>
 
-      <div class="checkbox-group">
-        <input type="checkbox" id="lembrarSenha" />
-        <label for="lembrarSenha">Salvar senha neste terminal</label>
-      </div>
-    </div>
 
-    <div id="logado-msg" style="display:none;">
-      <span></span>
-      <button id="btn-sair" onclick="sair()">Sair</button>
-    </div>
 
-    <div id="formulario">
-      <div class="form-group">
-        <input type="text" id="nomeCliente" placeholder="Nome do cliente" />
-        <input type="number" id="valor" placeholder="Valor (R$)" />
-        <button onclick="adicionarDivida()">Registrar Dívida</button>
-      </div>
-    </div>
 
-    <div id="lista" style="display:none;"></div>
+
+
+<meta charset="UTF-8">
+<title>Botão WhatsApp Flutuante</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0 0 60px 0; /* Espaço para o botão no rodapé */
+    font-family: Arial, sans-serif;
+  }
+
+  /* Botão fixo no canto inferior direito */
+  .whatsapp-btn {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .whatsapp-btn:hover {
+    background-color: #128c4a;
+  }
+  .whatsapp-btn i {
+    line-height: 56px;
+  }
+</style>
+<!-- Importa ícone do WhatsApp via CDN Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+
+<p> </p>
+
+<!-- Botão WhatsApp -->
+<a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+
+
+
   </div>
-</body>
-</html>
