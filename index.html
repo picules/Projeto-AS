@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Controle de Dívidas</title>
+  <title>Controle de Dívidas com Firebase Realtime Listener</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -151,10 +150,268 @@
       }
     }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-analytics.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      query,
+      orderBy,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
+      authDomain: "adrjb-99601.firebaseapp.com",
+      projectId: "adrjb-99601",
+      storageBucket: "adrjb-99601.firebasestorage.app",
+      messagingSenderId: "688129341856",
+      appId: "1:688129341856:web:c0a378171329e52c038cc5",
+      measurementId: "G-2BXZJ9LETC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    const senhas = {
+      Karol: "14",
+      Rodrigo: "@4",
+      Gabriela: "66",
+      Vagner: "admin",
+    };
+
+    let devedores = [];
+    let usuarioAtual = "";
+
+    const loginSection = document.getElementById("login-section");
+    const logadoMsg = document.getElementById("logado-msg");
+    const formulario = document.getElementById("formulario");
+    const lista = document.getElementById("lista");
+    const funcionarioSelect = document.getElementById("funcionario");
+    const senhaInput = document.getElementById("senha");
+    const lembrarSenhaCheckbox = document.getElementById("lembrarSenha");
+    const nomeClienteInput = document.getElementById("nomeCliente");
+    const valorInput = document.getElementById("valor");
+
+    funcionarioSelect.addEventListener("change", () => {
+      const sel = funcionarioSelect.value;
+      senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
+    });
+
+    function mostrarLogin(mostrar) {
+      loginSection.style.display = mostrar ? "block" : "none";
+    }
+    function mostrarLogadoMsg(mostrar) {
+      if (mostrar) {
+        logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
+        logadoMsg.style.display = "flex";
+      } else {
+        logadoMsg.style.display = "none";
+      }
+    }
+    function mostrarFormulario(mostrar) {
+      formulario.style.display = mostrar ? "block" : "none";
+    }
+    function mostrarLista(mostrar) {
+      lista.style.display = mostrar ? "block" : "none";
+    }
+
+    window.acessarSistema = function() {
+      const funcionario = funcionarioSelect.value;
+      const senha = senhaInput.value;
+
+      if (!funcionario || senha !== senhas[funcionario]) {
+        alert("Senha incorreta!");
+        return;
+      }
+      usuarioAtual = funcionario;
+
+      if (lembrarSenhaCheckbox.checked) {
+        localStorage.setItem(`senha_${usuarioAtual}`, senhaInput.value);
+      } else {
+        localStorage.removeItem(`senha_${usuarioAtual}`);
+      }
+
+      mostrarLogin(false);
+      mostrarLogadoMsg(true);
+      mostrarFormulario(true);
+      mostrarLista(true);
+
+      iniciarListenerRealtime();
+    };
+
+    window.sair = function() {
+      usuarioAtual = "";
+      mostrarLogin(true);
+      mostrarLogadoMsg(false);
+      mostrarFormulario(false);
+      mostrarLista(false);
+      senhaInput.value = "";
+      funcionarioSelect.value = "";
+      lista.innerHTML = "";
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
+
+    function atualizarLista() {
+      const agora = new Date();
+      lista.innerHTML = "";
+
+      // Remover mensagens apagadas há mais de 72 horas
+      devedores = devedores.filter(d => {
+        if (d.removida && d.apagadaPorVagner) {
+          const apagadaHaHoras = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
+          if (apagadaHaHoras >= 72) {
+            if (d.id) {
+              deleteDoc(doc(db, "dividas", d.id));
+            }
+            return false;
+          }
+        }
+        return true;
+      });
+
+      devedores.forEach((d, i) => {
+        if (d.removida && d.apagadaPorVagner) {
+          const div = document.createElement("div");
+          div.className = "devedor apagada";
+          div.innerHTML = `
+            Msg apagada por Vagner<br>
+            ${new Date(d.dataApagada).toLocaleString()}
+          `;
+          lista.appendChild(div);
+        } else if (!d.removida) {
+          const div = document.createElement("div");
+          div.className = "devedor";
+          div.innerHTML = `
+            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}
+            <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+            ${
+              d.pago
+                ? `<button class="pago-btn">Pago por ${d.quemPagou}<br>
+${new Date(d.dataPago).toLocaleString()}</button>`
+                : `<button class="devendo-btn" onclick="marcarPago(${i})">Devendo<br>
+${new Date(d.dataDevendo).toLocaleString()}</button>`
+            }
+            ${
+              (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+                ? `<button class="excluir-btn" onclick="excluir(${i})">Excluir</button>`
+                : ""
+            }
+          `;
+          lista.appendChild(div);
+        }
+      });
+    }
+
+    async function iniciarListenerRealtime() {
+      const dividasCol = collection(db, "dividas");
+      const q = query(dividasCol, orderBy("dataDevendo", "desc"));
+
+      onSnapshot(q, (querySnapshot) => {
+        devedores = [];
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          devedores.push({
+            id: docSnap.id,
+            nome: data.nome,
+            valor: data.valor,
+            funcionario: data.funcionario,
+            dataDevendo: data.dataDevendo,
+            pago: data.pago,
+            quemPagou: data.quemPagou,
+            dataPago: data.dataPago,
+            removida: data.removida,
+            apagadaPorVagner: data.apagadaPorVagner,
+            dataApagada: data.dataApagada
+          });
+        });
+        atualizarLista();
+      });
+    }
+
+    window.adicionarDivida = async function() {
+      const nome = nomeClienteInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      const dataHora = new Date().toISOString();
+
+      if (!nome || isNaN(valor)) {
+        alert("Preencha nome e valor corretamente!");
+        return;
+      }
+      if (devedores.filter(d => !d.removida).length >= 100) {
+        alert("Limite de 100 clientes ativos atingido.");
+        return;
+      }
+
+      await addDoc(collection(db, "dividas"), {
+        nome,
+        valor,
+        funcionario: usuarioAtual,
+        dataDevendo: dataHora,
+        pago: false,
+        quemPagou: "",
+        dataPago: "",
+        removida: false,
+        apagadaPorVagner: false,
+        dataApagada: "",
+      });
+
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+      // A atualização será automática pelo listener realtime
+    };
+
+    window.marcarPago = async function(index) {
+      const divida = devedores[index];
+      if (divida.pago || divida.removida) return;
+
+      const docRef = doc(db, "dividas", divida.id);
+      await updateDoc(docRef, {
+        pago: true,
+        quemPagou: usuarioAtual,
+        dataPago: new Date().toISOString(),
+      });
+      // A atualização será automática pelo listener realtime
+    };
+
+    window.excluir = async function(index) {
+      const divida = devedores[index];
+      if (!divida) return;
+
+      if (usuarioAtual !== divida.funcionario && usuarioAtual !== "Vagner") {
+        alert("Só quem anotou ou Vagner pode excluir.");
+        return;
+      }
+
+      const docRef = doc(db, "dividas", divida.id);
+
+      if (usuarioAtual === "Vagner") {
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: true,
+          dataApagada: new Date().toISOString(),
+        });
+      } else {
+        await deleteDoc(docRef);
+      }
+      // A atualização será automática pelo listener realtime
+    };
+
+  </script>
 </head>
 <body>
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
+
     <div id="login-section">
       <div class="form-group">
         <select id="funcionario">
@@ -167,15 +424,18 @@
         <input type="password" id="senha" placeholder="Senha" />
         <button onclick="acessarSistema()">Entrar</button>
       </div>
+
       <div class="checkbox-group">
         <input type="checkbox" id="lembrarSenha" />
         <label for="lembrarSenha">Salvar senha neste terminal</label>
       </div>
     </div>
+
     <div id="logado-msg" style="display:none;">
       <span></span>
       <button id="btn-sair" onclick="sair()">Sair</button>
     </div>
+
     <div id="formulario">
       <div class="form-group">
         <input type="text" id="nomeCliente" placeholder="Nome do cliente" />
@@ -183,182 +443,8 @@
         <button onclick="adicionarDivida()">Registrar Dívida</button>
       </div>
     </div>
-    <div id="lista"></div>
+
+    <div id="lista" style="display:none;"></div>
   </div>
-  <script>
-    const senhas = {
-      Karol: "14",
-      Rodrigo: "@4",
-      Gabriela: "66",
-      Vagner: "admin",
-    };
-    let devedores = [];
-    let usuarioAtual = "";
-
-    function salvarLocal() {
-      localStorage.setItem("devedores", JSON.stringify(devedores));
-      localStorage.setItem("usuarioAtual", usuarioAtual);
-    }
-
-    function carregarLocal() {
-      const dados = localStorage.getItem("devedores");
-      if (dados) devedores = JSON.parse(dados);
-      const usuarioSalvo = localStorage.getItem("usuarioAtual");
-      if (usuarioSalvo) usuarioAtual = usuarioSalvo;
-    }
-
-    function carregarSenhaSalva() {
-      const funcionario = document.getElementById("funcionario").value;
-      const senhaSalva = localStorage.getItem(`senha_${funcionario}`);
-      document.getElementById("senha").value = senhaSalva || "";
-    }
-
-    document.getElementById("funcionario").addEventListener("change", carregarSenhaSalva);
-
-    window.onload = function () {
-      carregarLocal();
-      if (usuarioAtual) {
-        mostrarLogin(false);
-        mostrarLogadoMsg(true);
-        atualizarLista();
-        if (["Vagner", "Karol", "Rodrigo", "Gabriela"].includes(usuarioAtual)) {
-          document.getElementById("formulario").style.display = "block";
-        }
-      }
-    };
-
-    function mostrarLogin(mostrar) {
-      const loginSection = document.getElementById("login-section");
-      loginSection.style.display = mostrar ? "block" : "none";
-    }
-
-    function mostrarLogadoMsg(mostrar) {
-      const logadoMsg = document.getElementById("logado-msg");
-      logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
-      logadoMsg.style.display = mostrar ? "flex" : "none";
-    }
-
-    function acessarSistema() {
-      const funcionario = document.getElementById("funcionario").value;
-      const senha = document.getElementById("senha").value;
-      if (!funcionario || senha !== senhas[funcionario]) {
-        alert("Senha incorreta!");
-        return;
-      }
-      usuarioAtual = funcionario;
-      if (document.getElementById("lembrarSenha").checked) {
-        localStorage.setItem(`senha_${funcionario}`, senha);
-      }
-      salvarLocal();
-      mostrarLogin(false);
-      mostrarLogadoMsg(true);
-      document.getElementById("lista").style.display = "block";
-      if (["Vagner", "Karol", "Rodrigo", "Gabriela"].includes(usuarioAtual)) {
-        document.getElementById("formulario").style.display = "block";
-      }
-      atualizarLista();
-    }
-
-    function adicionarDivida() {
-      const nome = document.getElementById("nomeCliente").value.trim();
-      const valor = parseFloat(document.getElementById("valor").value);
-      const dataHora = new Date().toLocaleString();
-      if (!nome || isNaN(valor)) {
-        alert("Preencha nome e valor corretamente!");
-        return;
-      }
-      if (devedores.filter((d) => !d.removida).length >= 10) {
-        alert("Limite de 10 clientes ativos atingido.");
-        return;
-      }
-      devedores.push({
-        nome,
-        valor,
-        funcionario: usuarioAtual,
-        dataDevendo: dataHora,
-        pago: false,
-        quemPagou: "",
-        dataPago: "",
-        removida: false,
-        apagadaPorVagner: false,
-        dataApagada: "",
-      });
-      salvarLocal();
-      document.getElementById("nomeCliente").value = "";
-      document.getElementById("valor").value = "";
-      atualizarLista();
-    }
-
-    function marcarPago(index) {
-      if (devedores[index].pago || devedores[index].removida) return;
-      devedores[index].pago = true;
-      devedores[index].quemPagou = usuarioAtual;
-      devedores[index].dataPago = new Date().toLocaleString();
-      salvarLocal();
-      atualizarLista();
-    }
-
-    function excluir(index) {
-      const quemAnotou = devedores[index].funcionario;
-      if (usuarioAtual !== quemAnotou && usuarioAtual !== "Vagner") {
-        alert("Só quem anotou ou Vagner pode excluir.");
-        return;
-      }
-      if (usuarioAtual === "Vagner") {
-        devedores[index].removida = true;
-        devedores[index].apagadaPorVagner = true;
-        devedores[index].dataApagada = new Date();
-      } else {
-        devedores.splice(index, 1);
-      }
-      salvarLocal();
-      atualizarLista();
-    }
-
-    function atualizarLista() {
-      const agora = new Date();
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
-      devedores = devedores.filter((d) => {
-        if (d.removida && d.apagadaPorVagner) {
-          const apagadaHaHoras = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
-          return apagadaHaHoras < 48;
-        }
-        return true;
-      });
-      devedores.forEach((d, i) => {
-        const div = document.createElement("div");
-        if (d.removida && d.apagadaPorVagner) {
-          div.className = "devedor apagada";
-          div.innerHTML = `Msg apagada por Vagner<br>${new Date(d.dataApagada).toLocaleString()}`;
-        } else if (!d.removida) {
-          div.className = "devedor";
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}
-            <div class="info">Anotado por: ${d.funcionario} em ${d.dataDevendo}</div>
-            ${d.pago
-              ? `<button class="pago-btn">Pago por ${d.quemPagou}<br>${d.dataPago}</button>`
-              : `<button class="devendo-btn" onclick="marcarPago(${i})">Devendo<br>${d.dataDevendo}</button>`}
-            ${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
-              ? `<button class="excluir-btn" onclick="excluir(${i})">Excluir</button>`
-              : ""}
-          `;
-        }
-        lista.appendChild(div);
-      });
-      salvarLocal();
-    }
-
-    function sair() {
-      usuarioAtual = "";
-      salvarLocal();
-      mostrarLogin(true);
-      mostrarLogadoMsg(false);
-      document.getElementById("formulario").style.display = "none";
-      document.getElementById("lista").style.display = "none";
-      document.getElementById("senha").value = "";
-      document.getElementById("funcionario").value = "";
-    }
-  </script>
 </body>
 </html>
