@@ -2,14 +2,15 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Controle de Dívidas com Firebase</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Controle de Dívidas com Firebase</title>
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #eef2f5;
       margin: 0;
-      padding: 20px;
+      padding: 20px 0 80px 0; /* espaço extra embaixo para botão whatsapp */
     }
 
     h2 {
@@ -139,16 +140,16 @@
     }
 
     .info-regras {
-      background:#f0f8ff;
-      padding:10px;
-      margin-bottom:15px;
-      border:1px solid #007bff;
-      border-radius:6px;
-      font-size:14px;
+      background:#f0f8ff; 
+      padding:10px; 
+      margin-bottom:15px; 
+      border:1px solid #007bff; 
+      border-radius:6px; 
+      font-size:14px; 
       color:#004085;
     }
 
-    /* Responsividade simples */
+    /* Responsividade simples para celular */
     @media (max-width: 480px) {
       .form-group {
         flex-direction: column;
@@ -166,7 +167,34 @@
         margin-top: 10px;
       }
     }
+
+    /* Estilo botão WhatsApp flutuante */
+    .whatsapp-btn {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      background-color: #25d366;
+      color: white;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      text-align: center;
+      font-size: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .whatsapp-btn:hover {
+      background-color: #128c4a;
+    }
+    .whatsapp-btn i {
+      line-height: 56px;
+    }
   </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
 </head>
 <body>
 
@@ -182,12 +210,12 @@
           <option value="Gabriela">Gabriela</option>
           <option value="Vagner">Vagner (ADM)</option>
         </select>
-        <input type="password" id="senha" placeholder="Senha">
+        <input type="password" id="senha" placeholder="Senha" />
         <button onclick="acessarSistema()">Entrar</button>
       </div>
 
       <div class="form-group" style="margin-top:-10px;">
-        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
+        <label><input type="checkbox" id="lembrarSenha" /> Salvar senha neste terminal</label>
       </div>
     </div>
 
@@ -198,8 +226,8 @@
 
     <div id="formulario" style="display:none;">
       <div class="form-group">
-        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
-        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off" />
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01" />
         <button onclick="adicionarDivida()">Adicionar Dívida</button>
       </div>
     </div>
@@ -209,10 +237,31 @@
     <div id="lista" style="margin-top:20px;"></div>
   </div>
 
+  <!-- Botão WhatsApp Flutuante -->
+  <a
+    href="https://wa.me/5583996323995"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="whatsapp-btn"
+    aria-label="WhatsApp"
+  >
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
   <!-- Firebase e App JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      query,
+      orderBy,
+      onSnapshot,
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
@@ -221,7 +270,7 @@
       storageBucket: "adrjb-99601.firebasestorage.app",
       messagingSenderId: "688129341856",
       appId: "1:688129341856:web:c0a378171329e52c038cc5",
-      measurementId: "G-2BXZJ9LETC"
+      measurementId: "G-2BXZJ9LETC",
     };
 
     const app = initializeApp(firebaseConfig);
@@ -231,7 +280,7 @@
       Karol: "14",
       Rodrigo: "@4",
       Gabriela: "66",
-      Vagner: "admin"
+      Vagner: "admin",
     };
 
     let devedores = [];
@@ -270,7 +319,7 @@
       lista.style.display = mostrar ? "block" : "none";
     }
 
-    window.acessarSistema = function() {
+    window.acessarSistema = function () {
       const funcionario = funcionarioSelect.value;
       const senha = senhaInput.value;
 
@@ -294,7 +343,7 @@
       iniciarListenerRealtime();
     };
 
-    window.sair = function() {
+    window.sair = function () {
       usuarioAtual = "";
       mostrarLogin(true);
       mostrarLogadoMsg(false);
@@ -311,7 +360,7 @@
       const agora = new Date();
 
       // Apagar dívidas removidas pelo Vagner após 72 horas
-      devedores = devedores.filter(d => {
+      devedores = devedores.filter((d) => {
         if (d.removida && d.apagadaPorVagner) {
           const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
           if (horasPassadas >= 72) {
@@ -325,7 +374,7 @@
       });
 
       // Marcar dívidas >90 dias como removidas (remoção automática)
-      devedores.forEach(async d => {
+      devedores.forEach(async (d) => {
         const dataDevendo = new Date(d.dataDevendo);
         const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
         if (diasPassados > 90 && !d.removida) {
@@ -334,7 +383,7 @@
             removida: true,
             apagadaPorVagner: false,
             dataApagada: new Date().toISOString(),
-            motivoExclusao: "Remoção automática após 90 dias"
+            motivoExclusao: "Remoção automática após 90 dias",
           });
         }
       });
@@ -364,7 +413,7 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
                 : `<button class="btn-devendo" onclick="marcarPago(${i})">Devendo</button>`
             }
             ${
-              (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+              usuarioAtual === d.funcionario || usuarioAtual === "Vagner"
                 ? `<button class="btn-excluir" onclick="excluir(${i})">Excluir</button>`
                 : ""
             }
@@ -380,7 +429,7 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
 
       onSnapshot(q, (querySnapshot) => {
         devedores = [];
-        querySnapshot.forEach(docSnap => {
+        querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
           devedores.push({
             id: docSnap.id,
@@ -394,14 +443,14 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
             removida: data.removida,
             apagadaPorVagner: data.apagadaPorVagner,
             dataApagada: data.dataApagada,
-            motivoExclusao: data.motivoExclusao || ""
+            motivoExclusao: data.motivoExclusao || "",
           });
         });
         atualizarLista();
       });
     }
 
-    window.adicionarDivida = async function() {
+    window.adicionarDivida = async function () {
       const nome = nomeClienteInput.value.trim();
       const valor = parseFloat(valorInput.value);
       const dataHora = new Date().toISOString();
@@ -410,7 +459,7 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
         alert("Preencha nome e valor corretamente!");
         return;
       }
-      if (devedores.filter(d => !d.removida).length >= 100) {
+      if (devedores.filter((d) => !d.removida).length >= 100) {
         alert("Limite de 100 clientes ativos atingido.");
         return;
       }
@@ -426,14 +475,14 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
         removida: false,
         apagadaPorVagner: false,
         dataApagada: "",
-        motivoExclusao: ""
+        motivoExclusao: "",
       });
 
       nomeClienteInput.value = "";
       valorInput.value = "";
     };
 
-    window.marcarPago = async function(index) {
+    window.marcarPago = async function (index) {
       const divida = devedores[index];
       if (divida.pago || divida.removida) return;
 
@@ -445,7 +494,7 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
       });
     };
 
-    window.excluir = async function(index) {
+    window.excluir = async function (index) {
       const divida = devedores[index];
       if (!divida) return;
 
@@ -461,10 +510,9 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
           removida: true,
           apagadaPorVagner: true,
           dataApagada: new Date().toISOString(),
-          motivoExclusao: "Excluído pelo ADM Vagner"
+          motivoExclusao: "Excluído pelo ADM Vagner",
         });
       } else {
-        // Usuário autor deve informar motivo (prompt)
         const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
         if (!motivo) {
           alert("Motivo é obrigatório.");
@@ -478,11 +526,10 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
           removida: true,
           apagadaPorVagner: false,
           dataApagada: new Date().toISOString(),
-          motivoExclusao: motivo
+          motivoExclusao: motivo,
         });
       }
     };
   </script>
-
 </body>
 </html>
