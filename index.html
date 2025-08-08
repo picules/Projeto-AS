@@ -10,7 +10,7 @@
       font-family: 'Segoe UI', sans-serif;
       background: #eef2f5;
       margin: 0;
-      padding: 20px 0 80px 0; /* espaço extra embaixo para botão whatsapp */
+      padding: 20px 0 80px 0;
     }
 
     h2 {
@@ -104,8 +104,9 @@
     }
 
     .apagada {
-      color: #888;
-      font-style: italic;
+      background-color: #f1f1f1;
+      color: #777;
+      opacity: 0.7;
     }
 
     #login-section {
@@ -149,7 +150,6 @@
       color:#004085;
     }
 
-    /* Responsividade simples para celular */
     @media (max-width: 480px) {
       .form-group {
         flex-direction: column;
@@ -168,7 +168,6 @@
       }
     }
 
-    /* Estilo botão WhatsApp flutuante */
     .whatsapp-btn {
       position: fixed;
       bottom: 15px;
@@ -194,7 +193,6 @@
   </style>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
 </head>
 <body>
 
@@ -233,22 +231,13 @@
     </div>
 
     <div class="info-regras"><br></div>
-
     <div id="lista" style="margin-top:20px;"></div>
   </div>
 
-  <!-- Botão WhatsApp Flutuante -->
-  <a
-    href="https://wa.me/5583996323995"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="whatsapp-btn"
-    aria-label="WhatsApp"
-  >
+  <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
 
-  <!-- Firebase e App JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
     import {
@@ -359,7 +348,6 @@
     function atualizarLista() {
       const agora = new Date();
 
-      // Apagar dívidas removidas pelo Vagner após 72 horas
       devedores = devedores.filter((d) => {
         if (d.removida && d.apagadaPorVagner) {
           const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
@@ -373,7 +361,6 @@
         return true;
       });
 
-      // Marcar dívidas >90 dias como removidas (remoção automática)
       devedores.forEach(async (d) => {
         const dataDevendo = new Date(d.dataDevendo);
         const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
@@ -395,8 +382,11 @@
           const div = document.createElement("div");
           div.className = "devedor apagada";
           div.innerHTML = `
-            Msg apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario}<br>
-            ${new Date(d.dataApagada).toLocaleString()}<br>
+            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}<br>
+            <span style="font-size:13px;color:#555;">
+              Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em
+              ${new Date(d.dataApagada).toLocaleString()}
+            </span><br>
             <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
           `;
           lista.appendChild(div);
