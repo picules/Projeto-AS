@@ -1,8 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Controle de Dívidas com Firebase</title>
 
   <style>
@@ -83,9 +83,9 @@
     .whatsapp-btn i { line-height: 56px; }
   </style>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</head>
-<body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
 
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
@@ -99,12 +99,12 @@
           <option value="Gabriela">Gabriela</option>
           <option value="Vagner">Vagner (ADM)</option>
         </select>
-        <input type="password" id="senha" placeholder="Senha" />
+        <input type="password" id="senha" placeholder="Senha">
         <button onclick="acessarSistema()">Entrar</button>
       </div>
 
       <div class="form-group" style="margin-top:-10px;">
-        <label><input type="checkbox" id="lembrarSenha" /> Salvar senha neste terminal</label>
+        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
       </div>
     </div>
 
@@ -115,17 +115,13 @@
 
     <div id="formulario" style="display:none;">
       <div class="form-group">
-        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off" />
-        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01" />
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
         <button onclick="adicionarDivida()">Adicionar Dívida</button>
       </div>
     </div>
 
-    <div class="info-regras">
-      Regras ativas: <strong>Devendo no topo</strong> · <strong>Pagos abaixo</strong> ·
-      <strong>Apagados por último</strong> · Apagados somem em <strong>15 dias</strong> ·
-      Pagos somem em <strong>20 dias</strong> · Devendo <strong>nunca expira</strong>.
-    </div>
+    <div class="info-regras"></div>
 
     <div id="lista" style="margin-top:20px;"></div>
   </div>
@@ -297,7 +293,8 @@
         div.innerHTML = `
           <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
           <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
-          <button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>
+          <button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>
+${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>
           ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
               ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : "" }
         `;
@@ -432,5 +429,5 @@
       }
     };
   </script>
-</body>
-</html>
+
+
