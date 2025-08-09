@@ -12,12 +12,7 @@
       margin: 0;
       padding: 20px 0 80px 0;
     }
-
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-
+    h2 { text-align: center; color: #333; }
     .container {
       max-width: 700px;
       margin: auto;
@@ -26,170 +21,66 @@
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
     .form-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
     }
-
     input, select, button {
-      flex: 1 1 150px;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      flex: 1 1 150px; padding: 10px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 6px;
     }
-
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
 
     .devedor {
-      background: #f8f9fa;
-      padding: 15px;
-      border-left: 5px solid #007bff;
-      border-radius: 8px;
-      margin-bottom: 15px;
+      background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff;
+      border-radius: 8px; margin-bottom: 15px;
     }
-
-    .devedor strong {
-      font-size: 18px;
-    }
-
-    .info {
-      font-size: 14px;
-      color: #555;
-      margin: 5px 0;
-    }
+    .devedor strong { font-size: 18px; }
+    .info { font-size: 14px; color: #555; margin: 5px 0; }
 
     .btn-devendo, .btn-pago, .btn-excluir {
-      padding: 8px 12px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      font-size: 14px;
+      padding: 8px 12px; margin-top: 5px; border: none; border-radius: 5px;
+      font-weight: bold; font-size: 14px;
     }
+    .btn-devendo { background-color: #000; color: white; cursor: pointer; }
+    .btn-pago { background-color: #28a745; color: white; cursor: default; }
+    .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
+    .btn-excluir:hover { background-color: #c82333; }
 
-    .btn-devendo {
-      background-color: #000;
-      color: white;
-      cursor: pointer;
-    }
+    .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
 
-    .btn-pago {
-      background-color: #28a745;
-      color: white;
-      cursor: default;
-    }
-
-    .btn-excluir {
-      background-color: #dc3545;
-      color: white;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    .btn-excluir:hover {
-      background-color: #c82333;
-    }
-
-    .apagada {
-      background-color: #f1f1f1;
-      color: #777;
-      opacity: 0.7;
-    }
-
-    #login-section {
-      transition: opacity 0.5s ease;
-    }
-
+    #login-section { transition: opacity 0.5s ease; }
     #logado-msg {
-      font-size: 20px;
-      color: #007bff;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
+      font-size: 20px; color: #007bff; font-weight: bold;
+      text-align: center; margin-bottom: 15px;
+      display: flex; justify-content: center; align-items: center; gap: 15px;
     }
-
     #btn-sair {
-      background: #dc3545;
-      border: none;
-      color: white;
-      font-weight: bold;
-      padding: 6px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
+      background: #dc3545; border: none; color: white; font-weight: bold;
+      padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 14px;
     }
-
-    #btn-sair:hover {
-      background: #b02a37;
-    }
+    #btn-sair:hover { background: #b02a37; }
 
     .info-regras {
-      background:#f0f8ff; 
-      padding:10px; 
-      margin-bottom:15px; 
-      border:1px solid #007bff; 
-      border-radius:6px; 
-      font-size:14px; 
-      color:#004085;
+      background:#f0f8ff; padding:10px; margin-bottom:15px;
+      border:1px solid #007bff; border-radius:6px; font-size:14px; color:#004085;
     }
 
     @media (max-width: 480px) {
-      .form-group {
-        flex-direction: column;
-      }
-      input, select, button {
-        flex: 1 1 100%;
-      }
-      #logado-msg {
-        flex-direction: column;
-        font-size: 18px;
-        gap: 8px;
-      }
-      .btn-excluir {
-        margin-left: 0;
-        margin-top: 10px;
-      }
+      .form-group { flex-direction: column; }
+      input, select, button { flex: 1 1 100%; }
+      #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; }
+      .btn-excluir { margin-left: 0; margin-top: 10px; }
     }
 
     .whatsapp-btn {
-      position: fixed;
-      bottom: 15px;
-      right: 15px;
-      background-color: #25d366;
-      color: white;
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
-      text-align: center;
-      font-size: 30px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      z-index: 1000;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      position: fixed; bottom: 15px; right: 15px; background-color: #25d366;
+      color: white; border-radius: 50%; width: 56px; height: 56px; text-align: center;
+      font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000;
+      cursor: pointer; transition: background-color 0.3s ease;
     }
-    .whatsapp-btn:hover {
-      background-color: #128c4a;
-    }
-    .whatsapp-btn i {
-      line-height: 56px;
-    }
+    .whatsapp-btn:hover { background-color: #128c4a; }
+    .whatsapp-btn i { line-height: 56px; }
   </style>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -230,7 +121,12 @@
       </div>
     </div>
 
-    <div class="info-regras"><br></div>
+    <div class="info-regras">
+      Regras ativas: <strong>Devendo no topo</strong> · <strong>Pagos abaixo</strong> ·
+      <strong>Apagados por último</strong> · Apagados somem em <strong>15 dias</strong> ·
+      Pagos somem em <strong>20 dias</strong> · Devendo <strong>nunca expira</strong>.
+    </div>
+
     <div id="lista" style="margin-top:20px;"></div>
   </div>
 
@@ -290,9 +186,7 @@
       senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
     });
 
-    function mostrarLogin(mostrar) {
-      loginSection.style.display = mostrar ? "block" : "none";
-    }
+    function mostrarLogin(mostrar) { loginSection.style.display = mostrar ? "block" : "none"; }
     function mostrarLogadoMsg(mostrar) {
       if (mostrar) {
         logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
@@ -301,21 +195,13 @@
         logadoMsg.style.display = "none";
       }
     }
-    function mostrarFormulario(mostrar) {
-      formulario.style.display = mostrar ? "block" : "none";
-    }
-    function mostrarLista(mostrar) {
-      lista.style.display = mostrar ? "block" : "none";
-    }
+    function mostrarFormulario(mostrar) { formulario.style.display = mostrar ? "block" : "none"; }
+    function mostrarLista(mostrar) { lista.style.display = mostrar ? "block" : "none"; }
 
     window.acessarSistema = function () {
       const funcionario = funcionarioSelect.value;
       const senha = senhaInput.value;
-
-      if (!funcionario || senha !== senhas[funcionario]) {
-        alert("Senha incorreta!");
-        return;
-      }
+      if (!funcionario || senha !== senhas[funcionario]) { alert("Senha incorreta!"); return; }
       usuarioAtual = funcionario;
 
       if (lembrarSenhaCheckbox.checked) {
@@ -345,72 +231,104 @@
       valorInput.value = "";
     };
 
+    function diasDesde(isoDate) {
+      if (!isoDate) return Infinity;
+      const ms = Date.now() - new Date(isoDate).getTime();
+      return ms / (1000 * 60 * 60 * 24);
+    }
+    function fmtValor(v) {
+      try { return (Number(v) || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+      catch { return `R$ ${Number(v).toFixed(2)}`; }
+    }
+
     function atualizarLista() {
-      const agora = new Date();
+      const devendo = [];
+      const pagos = [];
+      const apagados = [];
 
-      devedores = devedores.filter((d) => {
-        if (d.removida && d.apagadaPorVagner) {
-          const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
-          if (horasPassadas >= 72) {
-            if (d.id) {
-              deleteDoc(doc(db, "dividas", d.id));
-            }
-            return false;
+      // Classificação + expiração
+      const tarefasDelete = [];
+      devedores.forEach(d => {
+        if (d.removida) {
+          // Apagados somem após 15 dias
+          if (diasDesde(d.dataApagada) >= 15 && d.id) {
+            tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          } else {
+            apagados.push(d);
           }
+        } else if (d.pago) {
+          // Pagos somem após 20 dias
+          if (diasDesde(d.dataPago) >= 20 && d.id) {
+            tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          } else {
+            pagos.push(d);
+          }
+        } else {
+          // Devendo nunca some
+          devendo.push(d);
         }
-        return true;
       });
+      // Executa deletes assíncronos sem bloquear render
+      Promise.allSettled(tarefasDelete);
 
-      devedores.forEach(async (d) => {
-        const dataDevendo = new Date(d.dataDevendo);
-        const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
-        if (diasPassados > 90 && !d.removida) {
-          const docRef = doc(db, "dividas", d.id);
-          await updateDoc(docRef, {
-            removida: true,
-            apagadaPorVagner: false,
-            dataApagada: new Date().toISOString(),
-            motivoExclusao: "Remoção automática após 90 dias",
-          });
-        }
-      });
+      // Ordenações:
+      devendo.sort((a,b)=> new Date(b.dataDevendo)-new Date(a.dataDevendo));
+      pagos.sort((a,b)=> new Date(b.dataPago||b.dataDevendo)-new Date(a.dataPago||a.dataDevendo));
+      apagados.sort((a,b)=> new Date(b.dataApagada||b.dataDevendo)-new Date(a.dataApagada||a.dataDevendo));
 
       lista.innerHTML = "";
 
-      devedores.forEach((d, i) => {
-        if (d.removida) {
-          const div = document.createElement("div");
-          div.className = "devedor apagada";
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}<br>
-            <span style="font-size:13px;color:#555;">
-              Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em
-              ${new Date(d.dataApagada).toLocaleString()}
-            </span><br>
-            <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
-          `;
-          lista.appendChild(div);
-        } else {
-          const div = document.createElement("div");
-          div.className = "devedor";
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}
-            <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
-            ${
-              d.pago
-                ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou}<br>
-${new Date(d.dataPago).toLocaleString()}</button>`
-                : `<button class="btn-devendo" onclick="marcarPago(${i})">Devendo</button>`
-            }
-            ${
-              usuarioAtual === d.funcionario || usuarioAtual === "Vagner"
-                ? `<button class="btn-excluir" onclick="excluir(${i})">Excluir</button>`
-                : ""
-            }
-          `;
-          lista.appendChild(div);
-        }
+      const renderDevendo = (d,iOffset=0) => {
+        const div = document.createElement("div");
+        div.className = "devedor";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
+          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+          <button class="btn-devendo" onclick="marcarPago(${iOffset})">Devendo</button>
+          ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+              ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : "" }
+        `;
+        lista.appendChild(div);
+      };
+
+      const renderPago = (d,iOffset=0) => {
+        const div = document.createElement("div");
+        div.className = "devedor";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
+          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+          <button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>
+          ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+              ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : "" }
+        `;
+        lista.appendChild(div);
+      };
+
+      const renderApagado = (d) => {
+        const div = document.createElement("div");
+        div.className = "devedor apagada";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}<br>
+          <span style="font-size:13px;color:#555;">
+            Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em
+            ${d.dataApagada ? new Date(d.dataApagada).toLocaleString() : "-"}
+          </span><br>
+          <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
+        `;
+        lista.appendChild(div);
+      };
+
+      // Para manter os índices corretos nos botões (marcarPago/excluir),
+      // reconstruímos um vetor na ordem de exibição:
+      const exibicao = [...devendo, ...pagos, ...apagados];
+      exibicao.forEach((d, idx) => {
+        if (d.removida) renderApagado(d);
+        else if (d.pago) renderPago(d, idx);
+        else renderDevendo(d, idx);
       });
+
+      // Atualiza referência global para os índices dos botões
+      window._exibicaoAtual = exibicao;
     }
 
     async function iniciarListenerRealtime() {
@@ -473,10 +391,9 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
     };
 
     window.marcarPago = async function (index) {
-      const divida = devedores[index];
-      if (divida.pago || divida.removida) return;
-
-      const docRef = doc(db, "dividas", divida.id);
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d || d.pago || d.removida) return;
+      const docRef = doc(db, "dividas", d.id);
       await updateDoc(docRef, {
         pago: true,
         quemPagou: usuarioAtual,
@@ -485,15 +402,15 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
     };
 
     window.excluir = async function (index) {
-      const divida = devedores[index];
-      if (!divida) return;
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d) return;
 
-      if (usuarioAtual !== divida.funcionario && usuarioAtual !== "Vagner") {
+      if (usuarioAtual !== d.funcionario && usuarioAtual !== "Vagner") {
         alert("Só quem anotou ou Vagner pode excluir.");
         return;
       }
 
-      const docRef = doc(db, "dividas", divida.id);
+      const docRef = doc(db, "dividas", d.id);
 
       if (usuarioAtual === "Vagner") {
         await updateDoc(docRef, {
@@ -504,14 +421,8 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
         });
       } else {
         const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
-        if (!motivo) {
-          alert("Motivo é obrigatório.");
-          return;
-        }
-        if (motivo.length > 100) {
-          alert("Motivo deve ter até 100 caracteres.");
-          return;
-        }
+        if (!motivo) { alert("Motivo é obrigatório."); return; }
+        if (motivo.length > 100) { alert("Motivo deve ter até 100 caracteres."); return; }
         await updateDoc(docRef, {
           removida: true,
           apagadaPorVagner: false,
