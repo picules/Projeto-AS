@@ -12,190 +12,84 @@
       margin: 0;
       padding: 20px 0 80px 0;
     }
-
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-
+    h2 { text-align: center; color: #333; }
     .container {
-      max-width: 700px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 700px; margin: auto; background: #fff; padding: 20px;
+      border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
     .form-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
     }
-
     input, select, button {
-      flex: 1 1 150px;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      flex: 1 1 150px; padding: 10px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 6px;
     }
+    button { background: #007bff; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
 
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
+    .card-cliente {
+      background: #f8f9fa; border-left: 5px solid #007bff; border-radius: 8px;
+      margin-bottom: 15px; padding: 12px;
     }
-
-    button:hover {
-      background: #0056b3;
+    .linha-topo {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-
-    .devedor {
-      background: #f8f9fa;
-      padding: 15px;
-      border-left: 5px solid #007bff;
-      border-radius: 8px;
-      margin-bottom: 15px;
+    .nome { font-size: 18px; font-weight: 700; }
+    .totais { font-size: 14px; color:#333; }
+    .acoes { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn-sec { background:#000; color:#fff; border:none; padding:8px 12px; border-radius:5px; }
+    .btn-ok { background:#28a745; color:#fff; border:none; padding:8px 12px; border-radius:5px; }
+    .btn-warn { background:#dc3545; color:#fff; border:none; padding:8px 12px; border-radius:5px; }
+    .detalhes {
+      margin-top:10px; background:#fff; border:1px solid #e5e7eb; border-radius:6px; padding:8px;
+      display:none;
     }
-
-    .devedor strong {
-      font-size: 18px;
+    .item {
+      border-bottom:1px dashed #e0e0e0; padding:8px 0; display:flex; flex-direction:column; gap:6px;
     }
-
-    .info {
-      font-size: 14px;
-      color: #555;
-      margin: 5px 0;
+    .item:last-child { border-bottom:none; }
+    .lin { font-size:14px; color:#555; }
+    .chips { display:flex; gap:6px; flex-wrap:wrap; }
+    .chip {
+      font-size:12px; border-radius:14px; padding:4px 10px; background:#eef2f7; color:#333; border:1px solid #d6dbe3;
     }
+    .chip.pago { background:#e7f6ec; border-color:#b9e4c7; }
+    .chip.devendo { background:#fff2e2; border-color:#ffd8a8; }
 
-    .btn-devendo, .btn-pago, .btn-excluir {
-      padding: 8px 12px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .btn-devendo {
-      background-color: #000;
-      color: white;
-      cursor: pointer;
-    }
-
-    .btn-pago {
-      background-color: #28a745;
-      color: white;
-      cursor: default;
-    }
-
-    .btn-excluir {
-      background-color: #dc3545;
-      color: white;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    .btn-excluir:hover {
-      background-color: #c82333;
-    }
-
-    .apagada {
-      background-color: #f1f1f1;
-      color: #777;
-      opacity: 0.7;
-    }
-
-    #login-section {
-      transition: opacity 0.5s ease;
-    }
-
+    #login-section { transition: opacity 0.5s ease; }
     #logado-msg {
-      font-size: 20px;
-      color: #007bff;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 15px;
+      font-size: 20px; color: #007bff; font-weight: bold; text-align: center;
+      margin-bottom: 15px; display: none; justify-content: center; align-items: center; gap: 15px;
     }
-
     #btn-sair {
-      background: #dc3545;
-      border: none;
-      color: white;
-      font-weight: bold;
-      padding: 6px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
+      background: #dc3545; border: none; color: #fff; font-weight: bold;
+      padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 14px;
     }
-
-    #btn-sair:hover {
-      background: #b02a37;
-    }
+    #btn-sair:hover { background: #b02a37; }
 
     .info-regras {
-      background:#f0f8ff; 
-      padding:10px; 
-      margin-bottom:15px; 
-      border:1px solid #007bff; 
-      border-radius:6px; 
-      font-size:14px; 
-      color:#004085;
+      background:#f0f8ff; padding:10px; margin-bottom:15px; border:1px solid #007bff;
+      border-radius:6px; font-size:14px; color:#004085;
     }
 
     @media (max-width: 480px) {
-      .form-group {
-        flex-direction: column;
-      }
-      input, select, button {
-        flex: 1 1 100%;
-      }
-      #logado-msg {
-        flex-direction: column;
-        font-size: 18px;
-        gap: 8px;
-      }
-      .btn-excluir {
-        margin-left: 0;
-        margin-top: 10px;
-      }
+      .form-group { flex-direction: column; }
+      input, select, button { flex: 1 1 100%; }
+      #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; display:none; }
     }
 
     .whatsapp-btn {
-      position: fixed;
-      bottom: 15px;
-      right: 15px;
-      background-color: #25d366;
-      color: white;
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
-      text-align: center;
-      font-size: 30px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      z-index: 1000;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      position: fixed; bottom: 15px; right: 15px; background-color: #25d366; color: white;
+      border-radius: 50%; width: 56px; height: 56px; text-align: center; font-size: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; cursor: pointer; transition: background-color 0.3s ease;
     }
-    .whatsapp-btn:hover {
-      background-color: #128c4a;
-    }
-    .whatsapp-btn i {
-      line-height: 56px;
-    }
+    .whatsapp-btn:hover { background-color: #128c4a; }
+    .whatsapp-btn i { line-height: 56px; }
   </style>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
-
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
 
@@ -217,7 +111,7 @@
       </div>
     </div>
 
-    <div id="logado-msg" style="display:none;">
+    <div id="logado-msg">
       <span></span>
       <button id="btn-sair" onclick="sair()">Sair</button>
     </div>
@@ -230,7 +124,12 @@
       </div>
     </div>
 
-    <div class="info-regras"><br></div>
+    <div class="info-regras">
+      • Para **adicionar mais valor** a um cliente já existente, use o botão <b>“Adicionar valor”</b> dentro do cartão do cliente.<br>
+      • Lançamentos **pagos somem após 15 dias** automaticamente do sistema.<br>
+      • **Devendo fica em cima**, e clientes só com lançamentos pagos **descem**.
+    </div>
+
     <div id="lista" style="margin-top:20px;"></div>
   </div>
 
@@ -241,17 +140,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
     import {
-      getFirestore,
-      collection,
-      addDoc,
-      updateDoc,
-      deleteDoc,
-      doc,
-      query,
-      orderBy,
-      onSnapshot,
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+      query, orderBy, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
+    // ---- FIREBASE ----
     const firebaseConfig = {
       apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
       authDomain: "adrjb-99601.firebaseapp.com",
@@ -261,19 +154,13 @@
       appId: "1:688129341856:web:c0a378171329e52c038cc5",
       measurementId: "G-2BXZJ9LETC",
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const senhas = {
-      Karol: "14",
-      Rodrigo: "@4",
-      Gabriela: "66",
-      Vagner: "admin",
-    };
-
-    let devedores = [];
+    // ---- LOGIN ----
+    const senhas = { Karol: "14", Rodrigo: "@4", Gabriela: "66", Vagner: "admin" };
     let usuarioAtual = "";
+    let lancamentos = []; // documentos brutos da coleção "dividas"
 
     const loginSection = document.getElementById("login-section");
     const logadoMsg = document.getElementById("logado-msg");
@@ -290,32 +177,18 @@
       senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
     });
 
-    function mostrarLogin(mostrar) {
-      loginSection.style.display = mostrar ? "block" : "none";
+    function mostrarLogin(m) { loginSection.style.display = m ? "block" : "none"; }
+    function mostrarLogadoMsg(m) {
+      if (m) { logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`; }
+      logadoMsg.style.display = m ? "flex" : "none";
     }
-    function mostrarLogadoMsg(mostrar) {
-      if (mostrar) {
-        logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
-        logadoMsg.style.display = "flex";
-      } else {
-        logadoMsg.style.display = "none";
-      }
-    }
-    function mostrarFormulario(mostrar) {
-      formulario.style.display = mostrar ? "block" : "none";
-    }
-    function mostrarLista(mostrar) {
-      lista.style.display = mostrar ? "block" : "none";
-    }
+    function mostrarFormulario(m) { formulario.style.display = m ? "block" : "none"; }
+    function mostrarLista(m) { lista.style.display = m ? "block" : "none"; }
 
     window.acessarSistema = function () {
       const funcionario = funcionarioSelect.value;
       const senha = senhaInput.value;
-
-      if (!funcionario || senha !== senhas[funcionario]) {
-        alert("Senha incorreta!");
-        return;
-      }
+      if (!funcionario || senha !== senhas[funcionario]) { alert("Senha incorreta!"); return; }
       usuarioAtual = funcionario;
 
       if (lembrarSenhaCheckbox.checked) {
@@ -323,142 +196,57 @@
       } else {
         localStorage.removeItem(`senha_${usuarioAtual}`);
       }
-
-      mostrarLogin(false);
-      mostrarLogadoMsg(true);
-      mostrarFormulario(true);
-      mostrarLista(true);
-
+      mostrarLogin(false); mostrarLogadoMsg(true); mostrarFormulario(true); mostrarLista(true);
       iniciarListenerRealtime();
     };
 
     window.sair = function () {
       usuarioAtual = "";
-      mostrarLogin(true);
-      mostrarLogadoMsg(false);
-      mostrarFormulario(false);
-      mostrarLista(false);
-      senhaInput.value = "";
-      funcionarioSelect.value = "";
-      lista.innerHTML = "";
-      nomeClienteInput.value = "";
-      valorInput.value = "";
+      mostrarLogin(true); mostrarLogadoMsg(false); mostrarFormulario(false); mostrarLista(false);
+      senhaInput.value = ""; funcionarioSelect.value = ""; lista.innerHTML = "";
+      nomeClienteInput.value = ""; valorInput.value = "";
     };
 
-    function atualizarLista() {
-      const agora = new Date();
-
-      devedores = devedores.filter((d) => {
-        if (d.removida && d.apagadaPorVagner) {
-          const horasPassadas = (agora - new Date(d.dataApagada)) / (1000 * 60 * 60);
-          if (horasPassadas >= 72) {
-            if (d.id) {
-              deleteDoc(doc(db, "dividas", d.id));
-            }
-            return false;
-          }
-        }
-        return true;
-      });
-
-      devedores.forEach(async (d) => {
-        const dataDevendo = new Date(d.dataDevendo);
-        const diasPassados = (agora - dataDevendo) / (1000 * 60 * 60 * 24);
-        if (diasPassados > 90 && !d.removida) {
-          const docRef = doc(db, "dividas", d.id);
-          await updateDoc(docRef, {
-            removida: true,
-            apagadaPorVagner: false,
-            dataApagada: new Date().toISOString(),
-            motivoExclusao: "Remoção automática após 90 dias",
-          });
-        }
-      });
-
-      lista.innerHTML = "";
-
-      devedores.forEach((d, i) => {
-        if (d.removida) {
-          const div = document.createElement("div");
-          div.className = "devedor apagada";
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}<br>
-            <span style="font-size:13px;color:#555;">
-              Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em
-              ${new Date(d.dataApagada).toLocaleString()}
-            </span><br>
-            <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
-          `;
-          lista.appendChild(div);
-        } else {
-          const div = document.createElement("div");
-          div.className = "devedor";
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${d.valor.toFixed(2)}
-            <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
-            ${
-              d.pago
-                ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou}<br>
-${new Date(d.dataPago).toLocaleString()}</button>`
-                : `<button class="btn-devendo" onclick="marcarPago(${i})">Devendo</button>`
-            }
-            ${
-              usuarioAtual === d.funcionario || usuarioAtual === "Vagner"
-                ? `<button class="btn-excluir" onclick="excluir(${i})">Excluir</button>`
-                : ""
-            }
-          `;
-          lista.appendChild(div);
-        }
-      });
-    }
-
+    // ---- REALTIME ----
     async function iniciarListenerRealtime() {
-      const dividasCol = collection(db, "dividas");
-      const q = query(dividasCol, orderBy("dataDevendo", "desc"));
-
-      onSnapshot(q, (querySnapshot) => {
-        devedores = [];
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          devedores.push({
+      const q = query(collection(db, "dividas"), orderBy("dataDevendo", "desc"));
+      onSnapshot(q, (qsnap) => {
+        lancamentos = [];
+        qsnap.forEach(docSnap => {
+          const d = docSnap.data();
+          lancamentos.push({
             id: docSnap.id,
-            nome: data.nome,
-            valor: data.valor,
-            funcionario: data.funcionario,
-            dataDevendo: data.dataDevendo,
-            pago: data.pago,
-            quemPagou: data.quemPagou,
-            dataPago: data.dataPago,
-            removida: data.removida,
-            apagadaPorVagner: data.apagadaPorVagner,
-            dataApagada: data.dataApagada,
-            motivoExclusao: data.motivoExclusao || "",
+            nome: d.nome,
+            valor: Number(d.valor || 0),
+            funcionario: d.funcionario || "",
+            dataDevendo: d.dataDevendo || "",
+            pago: !!d.pago,
+            quemPagou: d.quemPagou || "",
+            dataPago: d.dataPago || "",
+            removida: !!d.removida,
+            apagadaPorVagner: !!d.apagadaPorVagner,
+            dataApagada: d.dataApagada || "",
+            motivoExclusao: d.motivoExclusao || ""
           });
         });
-        atualizarLista();
+        atualizarListaAgrupada();
       });
     }
 
+    // ---- ADICIONAR DÍVIDA (NOVO LANÇAMENTO) ----
     window.adicionarDivida = async function () {
       const nome = nomeClienteInput.value.trim();
       const valor = parseFloat(valorInput.value);
-      const dataHora = new Date().toISOString();
-
-      if (!nome || isNaN(valor) || valor <= 0) {
-        alert("Preencha nome e valor corretamente!");
-        return;
-      }
-      if (devedores.filter((d) => !d.removida).length >= 100) {
-        alert("Limite de 100 clientes ativos atingido.");
-        return;
-      }
+      if (!nome || isNaN(valor) || valor <= 0) { alert("Preencha nome e valor corretamente!"); return; }
+      // limite de ativos (não removidos) — mantém sua regra antiga
+      const ativos = lancamentos.filter(l => !l.removida).length;
+      if (ativos >= 100) { alert("Limite de 100 clientes/lançamentos ativos atingido."); return; }
 
       await addDoc(collection(db, "dividas"), {
         nome,
         valor,
         funcionario: usuarioAtual,
-        dataDevendo: dataHora,
+        dataDevendo: new Date().toISOString(),
         pago: false,
         quemPagou: "",
         dataPago: "",
@@ -467,59 +255,191 @@ ${new Date(d.dataPago).toLocaleString()}</button>`
         dataApagada: "",
         motivoExclusao: "",
       });
-
-      nomeClienteInput.value = "";
-      valorInput.value = "";
+      nomeClienteInput.value = ""; valorInput.value = "";
     };
 
-    window.marcarPago = async function (index) {
-      const divida = devedores[index];
-      if (divida.pago || divida.removida) return;
-
-      const docRef = doc(db, "dividas", divida.id);
-      await updateDoc(docRef, {
-        pago: true,
-        quemPagou: usuarioAtual,
-        dataPago: new Date().toISOString(),
+    // ---- ADICIONAR VALOR DENTRO DO CARTÃO DO CLIENTE ----
+    window.adicionarValorCliente = async function (nome) {
+      const txt = prompt(`Adicionar valor para ${nome}:`, "0,00");
+      if (!txt) return;
+      const valor = parseFloat((txt || "").replace(",", "."));
+      if (isNaN(valor) || valor <= 0) { alert("Valor inválido."); return; }
+      await addDoc(collection(db, "dividas"), {
+        nome,
+        valor,
+        funcionario: usuarioAtual,
+        dataDevendo: new Date().toISOString(),
+        pago: false,
+        quemPagou: "",
+        dataPago: "",
+        removida: false,
+        apagadaPorVagner: false,
+        dataApagada: "",
+        motivoExclusao: "",
       });
+      // ao inserir um novo lançamento, o "nome sobe" pelo critério de última atividade (ordenamos já)
     };
 
-    window.excluir = async function (index) {
-      const divida = devedores[index];
-      if (!divida) return;
+    // ---- MARCAR PAGO / EXCLUIR (POR LANÇAMENTO) ----
+    window.marcarPago = async function (id) {
+      const ref = doc(db, "dividas", id);
+      await updateDoc(ref, { pago: true, quemPagou: usuarioAtual, dataPago: new Date().toISOString() });
+    };
 
-      if (usuarioAtual !== divida.funcionario && usuarioAtual !== "Vagner") {
+    window.excluirLancamento = async function (id, funcionarioDoLancamento) {
+      if (usuarioAtual !== funcionarioDoLancamento && usuarioAtual !== "Vagner") {
         alert("Só quem anotou ou Vagner pode excluir.");
         return;
       }
-
-      const docRef = doc(db, "dividas", divida.id);
-
+      const ref = doc(db, "dividas", id);
       if (usuarioAtual === "Vagner") {
-        await updateDoc(docRef, {
-          removida: true,
-          apagadaPorVagner: true,
-          dataApagada: new Date().toISOString(),
+        await updateDoc(ref, {
+          removida: true, apagadaPorVagner: true, dataApagada: new Date().toISOString(),
           motivoExclusao: "Excluído pelo ADM Vagner",
         });
       } else {
         const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
-        if (!motivo) {
-          alert("Motivo é obrigatório.");
-          return;
-        }
-        if (motivo.length > 100) {
-          alert("Motivo deve ter até 100 caracteres.");
-          return;
-        }
-        await updateDoc(docRef, {
-          removida: true,
-          apagadaPorVagner: false,
-          dataApagada: new Date().toISOString(),
+        if (!motivo) { alert("Motivo é obrigatório."); return; }
+        if (motivo.length > 100) { alert("Motivo deve ter até 100 caracteres."); return; }
+        await updateDoc(ref, {
+          removida: true, apagadaPorVagner: false, dataApagada: new Date().toISOString(),
           motivoExclusao: motivo,
         });
       }
     };
+
+    // ---- AUTO-LIMPEZA: PAGOS SOMEM APÓS 15 DIAS ----
+    async function limparPagosVencidos(docs) {
+      const agora = new Date();
+      for (const l of docs) {
+        if (l.pago && !l.removida && l.dataPago) {
+          const dias = (agora - new Date(l.dataPago)) / (1000 * 60 * 60 * 24);
+          if (dias >= 15) {
+            try { await deleteDoc(doc(db, "dividas", l.id)); } catch(e) { /* ignora erro */ }
+          }
+        }
+      }
+    }
+
+    // ---- AGRUPAMENTO POR CLIENTE + ORDENAR ----
+    function atualizarListaAgrupada() {
+      // 1) remove definitivamente itens marcados como removidos há 72h (mantendo sua regra antiga)
+      const agora = new Date();
+      const ainda = lancamentos.filter(l => {
+        if (l.removida && l.dataApagada) {
+          const horas = (agora - new Date(l.dataApagada)) / (1000 * 60 * 60);
+          if (horas >= 72) {
+            // tentativa de deleção silenciosa
+            deleteDoc(doc(db, "dividas", l.id)).catch(()=>{});
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // 2) auto-apagar pagos com +15 dias
+      limparPagosVencidos(ainda);
+
+      // 3) agrupar por nome
+      const grupos = new Map();
+      for (const l of ainda) {
+        if (l.removida) continue; // não mostrar removidos
+        if (!grupos.has(l.nome)) grupos.set(l.nome, []);
+        grupos.get(l.nome).push(l);
+      }
+
+      // 4) montar array de cartões com totais
+      const cards = [];
+      grupos.forEach((arr, nome) => {
+        let totalDevendo = 0, totalPago = 0, temDevendo = false;
+        let ultimaAtividade = 0;
+        arr.forEach(l => {
+          if (l.pago) totalPago += l.valor; else { totalDevendo += l.valor; temDevendo = true; }
+          const t1 = l.dataPago ? Date.parse(l.dataPago) : 0;
+          const t0 = l.dataDevendo ? Date.parse(l.dataDevendo) : 0;
+          ultimaAtividade = Math.max(ultimaAtividade, t1, t0);
+        });
+        cards.push({
+          nome, totalDevendo, totalPago, temDevendo,
+          ultimaAtividade, itens: arr.sort((a,b)=>Date.parse(b.dataDevendo||0)-Date.parse(a.dataDevendo||0))
+        });
+      });
+
+      // 5) ordenar: quem tem devendo primeiro; dentro, por última atividade desc
+      cards.sort((a,b) => {
+        if (a.temDevendo !== b.temDevendo) return a.temDevendo ? -1 : 1; // devendo em cima
+        return b.ultimaAtividade - a.ultimaAtividade; // mais recente em cima
+      });
+
+      // 6) render
+      lista.innerHTML = "";
+      for (const c of cards) {
+        const card = document.createElement("div");
+        card.className = "card-cliente";
+        card.innerHTML = `
+          <div class="linha-topo">
+            <div>
+              <div class="nome">${c.nome}</div>
+              <div class="totais">
+                <b>Devendo:</b> R$ ${c.totalDevendo.toFixed(2)} &nbsp;•&nbsp;
+                <b>Pago (histórico):</b> R$ ${c.totalPago.toFixed(2)}
+              </div>
+            </div>
+            <div class="acoes">
+              <button class="btn-sec" onclick="adicionarValorCliente('${escapeAspas(c.nome)}')">Adicionar valor</button>
+              <button class="btn-sec" onclick="toggleDetalhes(this)">Detalhes</button>
+            </div>
+          </div>
+          <div class="detalhes"></div>
+        `;
+        const detalhes = card.querySelector(".detalhes");
+        detalhes.appendChild(renderizarItensCliente(c.itens));
+        lista.appendChild(card);
+      }
+    }
+
+    function escapeAspas(s){ return s.replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+
+    function toggleDetalhes(btn){
+      const det = btn.closest(".card-cliente").querySelector(".detalhes");
+      det.style.display = det.style.display === "none" || det.style.display === "" ? "block" : "none";
+    }
+
+    function renderizarItensCliente(itens){
+      const wrap = document.createElement("div");
+      for (const l of itens) {
+        const div = document.createElement("div");
+        div.className = "item";
+        const linhas = [];
+        linhas.push(`<div class="lin"><b>Valor:</b> R$ ${l.valor.toFixed(2)}</div>`);
+        linhas.push(`<div class="lin"><b>Anotado por:</b> ${l.funcionario} &nbsp;•&nbsp; <b>Em:</b> ${formatarData(l.dataDevendo)}</div>`);
+        if (l.pago) {
+          linhas.push(`<div class="lin"><b>Pago por:</b> ${l.quemPagou} &nbsp;•&nbsp; <b>Em:</b> ${formatarData(l.dataPago)}</div>`);
+        }
+        if (l.removida) {
+          linhas.push(`<div class="lin">Apagada em ${formatarData(l.dataApagada)} &nbsp;•&nbsp; Motivo: ${l.motivoExclusao || "—"}</div>`);
+        }
+        const chips = [];
+        chips.push(`<span class="chip ${l.pago ? 'pago' : 'devendo'}">${l.pago ? 'Pago' : 'Devendo'}</span>`);
+        if (usuarioAtual === l.funcionario || usuarioAtual === "Vagner") {
+          chips.push(`<button class="btn-warn" onclick="excluirLancamento('${l.id}','${escapeAspas(l.funcionario)}')">Excluir</button>`);
+        }
+        if (!l.pago) {
+          chips.push(`<button class="btn-ok" onclick="marcarPago('${l.id}')">Marcar pago</button>`);
+        }
+        div.innerHTML = `
+          ${linhas.join("")}
+          <div class="chips">${chips.join("")}</div>
+        `;
+        wrap.appendChild(div);
+      }
+      return wrap;
+    }
+
+    function formatarData(iso){
+      if (!iso) return "—";
+      try { return new Date(iso).toLocaleString(); } catch(e){ return "—"; }
+    }
   </script>
 </body>
 </html>
