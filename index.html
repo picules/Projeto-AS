@@ -1,251 +1,433 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Controle de Dívidas com Firebase</title>
 
-<link rel="manifest" href="manifest.json">
 
-<style>
-  body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 20px 0 80px 0; }
-  h2 { text-align: center; color: #333; }
-  .container { max-width: 700px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-  .form-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-  input, select, button { flex: 1 1 150px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
-  button { background: #007bff; color: white; border: none; cursor: pointer; }
-  button:hover { background: #0056b3; }
-  .devedor { background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff; border-radius: 8px; margin-bottom: 15px; }
-  .devedor strong { font-size: 18px; }
-  .info { font-size: 14px; color: #555; margin: 5px 0; }
-  .btn-devendo, .btn-pago, .btn-excluir { padding: 8px 12px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; font-size: 14px; }
-  .btn-devendo { background-color: #000; color: white; cursor: pointer; }
-  .btn-pago { background-color: #28a745; color: white; cursor: default; }
-  .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
-  .btn-excluir:hover { background-color: #c82333; }
-  .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
-  #logado-msg { font-size: 20px; color: #007bff; font-weight: bold; text-align: center; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 15px; }
-  #btn-sair { background: #dc3545; border: none; color: white; font-weight: bold; padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 14px; }
-  #btn-sair:hover { background: #b02a37; }
-  @media (max-width: 480px) {
-    .form-group { flex-direction: column; }
-    input, select, button { flex: 1 1 100%; }
-    #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; }
-    .btn-excluir { margin-left: 0; margin-top: 10px; }
-  }
-</style>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle de Dívidas com Firebase</title>
 
-<div class="container">
-  <h2>Sistema de Controle de Dívidas</h2>
-
-  <div id="login-section">
-    <div class="form-group">
-      <select id="funcionario">
-        <option value="">-- Selecione Funcionário --</option>
-        <option value="Karol">Karol</option>
-        <option value="Rodrigo">Rodrigo</option>
-        <option value="Gabriela">Gabriela</option>
-        <option value="Vagner">Vagner (ADM)</option>
-      </select>
-      <input type="password" id="senha" placeholder="Senha">
-      <button onclick="acessarSistema()">Entrar</button>
-    </div>
-    <div class="form-group" style="margin-top:-10px;">
-      <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
-    </div>
-  </div>
-
-  <div id="logado-msg" style="display:none;">
-    <span></span>
-    <button id="btn-sair" onclick="sair()">Sair</button>
-  </div>
-
-  <div id="formulario" style="display:none;">
-    <div class="form-group">
-      <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
-      <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
-      <button onclick="adicionarDivida()">Adicionar Dívida</button>
-    </div>
-  </div>
-
-  <div id="lista" style="margin-top:20px;"></div>
-
-  <!-- Botão baixar app (agora sempre visível) -->
-  <div id="download-app-btn" style="display:none;text-align:center;margin-top:20px;">
-    <button style="background:#007bff;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:16px;">
-      📲 Baixar App
-    </button>
-  </div>
-</div>
-
-<a href="https://wa.me/5583996323995" target="_blank" class="whatsapp-btn" aria-label="WhatsApp"
-   style="position: fixed; bottom: 15px; right: 15px; background-color: #25d366; color: white; border-radius: 50%; width: 56px; height: 56px; text-align: center; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; cursor: pointer;">
-  <i class="fab fa-whatsapp" style="line-height: 56px;"></i>
-</a>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot }
-    from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
-  }
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
-    authDomain: "adrjb-99601.firebaseapp.com",
-    projectId: "adrjb-99601",
-    storageBucket: "adrjb-99601.firebasestorage.app",
-    messagingSenderId: "688129341856",
-    appId: "1:688129341856:web:c0a378171329e52c038cc5",
-    measurementId: "G-2BXZJ9LETC"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const senhas = { Karol: "14", Rodrigo: "@4", Gabriela: "66", Vagner: "admin" };
-  let devedores = [], usuarioAtual = "";
-
-  let deferredPrompt;
-
-  // Captura o evento e força instalação
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    // Espera 2 segundos e mostra o popup de instalação
-    setTimeout(async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      }
-    }, 2000);
-  });
-
-  // Sempre mostra o botão
-  const btnDiv = document.getElementById("download-app-btn");
-  btnDiv.style.display = "block";
-  btnDiv.querySelector("button").addEventListener("click", async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    } else {
-      alert("Se não aparecer, use o menu do navegador e escolha 'Adicionar à tela inicial'.");
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef2f5;
+      margin: 0;
+      padding: 20px 0 80px 0;
     }
-  });
+    h2 { text-align: center; color: #333; }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
+    }
+    input, select, button {
+      flex: 1 1 150px; padding: 10px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
 
-  function pedirPermissaoNotificacao() {
-    if (usuarioAtual === "Vagner" && Notification.permission !== "granted") {
-      Notification.requestPermission().then(perm => {
-        if (perm === "granted") new Notification("Notificações ativadas para o ADM!");
+    .devedor {
+      background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff;
+      border-radius: 8px; margin-bottom: 15px;
+    }
+    .devedor strong { font-size: 18px; }
+    .info { font-size: 14px; color: #555; margin: 5px 0; }
+
+    .btn-devendo, .btn-pago, .btn-excluir {
+      padding: 8px 12px; margin-top: 5px; border: none; border-radius: 5px;
+      font-weight: bold; font-size: 14px;
+    }
+    .btn-devendo { background-color: #000; color: white; cursor: pointer; }
+    .btn-pago { background-color: #28a745; color: white; cursor: default; }
+    .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
+    .btn-excluir:hover { background-color: #c82333; }
+
+    .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
+
+    #login-section { transition: opacity 0.5s ease; }
+    #logado-msg {
+      font-size: 20px; color: #007bff; font-weight: bold;
+      text-align: center; margin-bottom: 15px;
+      display: flex; justify-content: center; align-items: center; gap: 15px;
+    }
+    #btn-sair {
+      background: #dc3545; border: none; color: white; font-weight: bold;
+      padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 14px;
+    }
+    #btn-sair:hover { background: #b02a37; }
+
+    .info-regras {
+      background:#f0f8ff; padding:10px; margin-bottom:15px;
+      border:1px solid #007bff; border-radius:6px; font-size:14px; color:#004085;
+    }
+
+    @media (max-width: 480px) {
+      .form-group { flex-direction: column; }
+      input, select, button { flex: 1 1 100%; }
+      #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; }
+      .btn-excluir { margin-left: 0; margin-top: 10px; }
+    }
+
+    .whatsapp-btn {
+      position: fixed; bottom: 15px; right: 15px; background-color: #25d366;
+      color: white; border-radius: 50%; width: 56px; height: 56px; text-align: center;
+      font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000;
+      cursor: pointer; transition: background-color 0.3s ease;
+    }
+    .whatsapp-btn:hover { background-color: #128c4a; }
+    .whatsapp-btn i { line-height: 56px; }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+
+  <div class="container">
+    <h2>Sistema de Controle de Dívidas</h2>
+
+    <div id="login-section">
+      <div class="form-group">
+        <select id="funcionario">
+          <option value="">-- Selecione Funcionário --</option>
+          <option value="Karol">Karol</option>
+          <option value="Rodrigo">Rodrigo</option>
+          <option value="Gabriela">Gabriela</option>
+          <option value="Vagner">Vagner (ADM)</option>
+        </select>
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="acessarSistema()">Entrar</button>
+      </div>
+
+      <div class="form-group" style="margin-top:-10px;">
+        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
+      </div>
+    </div>
+
+    <div id="logado-msg" style="display:none;">
+      <span></span>
+      <button id="btn-sair" onclick="sair()">Sair</button>
+    </div>
+
+    <div id="formulario" style="display:none;">
+      <div class="form-group">
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
+        <button onclick="adicionarDivida()">Adicionar Dívida</button>
+      </div>
+    </div>
+
+    <div class="info-regras"></div>
+
+    <div id="lista" style="margin-top:20px;"></div>
+  </div>
+
+  <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      doc,
+      query,
+      orderBy,
+      onSnapshot,
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
+      authDomain: "adrjb-99601.firebaseapp.com",
+      projectId: "adrjb-99601",
+      storageBucket: "adrjb-99601.firebasestorage.app",
+      messagingSenderId: "688129341856",
+      appId: "1:688129341856:web:c0a378171329e52c038cc5",
+      measurementId: "G-2BXZJ9LETC",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const senhas = {
+      Karol: "14",
+      Rodrigo: "@4",
+      Gabriela: "66",
+      Vagner: "admin",
+    };
+
+    let devedores = [];
+    let usuarioAtual = "";
+
+    const loginSection = document.getElementById("login-section");
+    const logadoMsg = document.getElementById("logado-msg");
+    const formulario = document.getElementById("formulario");
+    const lista = document.getElementById("lista");
+    const funcionarioSelect = document.getElementById("funcionario");
+    const senhaInput = document.getElementById("senha");
+    const lembrarSenhaCheckbox = document.getElementById("lembrarSenha");
+    const nomeClienteInput = document.getElementById("nomeCliente");
+    const valorInput = document.getElementById("valor");
+
+    funcionarioSelect.addEventListener("change", () => {
+      const sel = funcionarioSelect.value;
+      senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
+    });
+
+    function mostrarLogin(mostrar) { loginSection.style.display = mostrar ? "block" : "none"; }
+    function mostrarLogadoMsg(mostrar) {
+      if (mostrar) {
+        logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
+        logadoMsg.style.display = "flex";
+      } else {
+        logadoMsg.style.display = "none";
+      }
+    }
+    function mostrarFormulario(mostrar) { formulario.style.display = mostrar ? "block" : "none"; }
+    function mostrarLista(mostrar) { lista.style.display = mostrar ? "block" : "none"; }
+
+    window.acessarSistema = function () {
+      const funcionario = funcionarioSelect.value;
+      const senha = senhaInput.value;
+      if (!funcionario || senha !== senhas[funcionario]) { alert("Senha incorreta!"); return; }
+      usuarioAtual = funcionario;
+
+      if (lembrarSenhaCheckbox.checked) {
+        localStorage.setItem(`senha_${usuarioAtual}`, senhaInput.value);
+      } else {
+        localStorage.removeItem(`senha_${usuarioAtual}`);
+      }
+
+      mostrarLogin(false);
+      mostrarLogadoMsg(true);
+      mostrarFormulario(true);
+      mostrarLista(true);
+
+      iniciarListenerRealtime();
+    };
+
+    window.sair = function () {
+      usuarioAtual = "";
+      mostrarLogin(true);
+      mostrarLogadoMsg(false);
+      mostrarFormulario(false);
+      mostrarLista(false);
+      senhaInput.value = "";
+      funcionarioSelect.value = "";
+      lista.innerHTML = "";
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
+
+    function diasDesde(isoDate) {
+      if (!isoDate) return Infinity;
+      const ms = Date.now() - new Date(isoDate).getTime();
+      return ms / (1000 * 60 * 60 * 24);
+    }
+    function fmtValor(v) {
+      try { return (Number(v) || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+      catch { return `R$ ${Number(v).toFixed(2)}`; }
+    }
+
+    function atualizarLista() {
+      const devendo = [];
+      const pagos = [];
+      const apagados = [];
+
+      // Classificação + expiração
+      const tarefasDelete = [];
+      devedores.forEach(d => {
+        if (d.removida) {
+          // Apagados somem após 15 dias
+          if (diasDesde(d.dataApagada) >= 15 && d.id) {
+            tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          } else {
+            apagados.push(d);
+          }
+        } else if (d.pago) {
+          // Pagos somem após 20 dias
+          if (diasDesde(d.dataPago) >= 20 && d.id) {
+            tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          } else {
+            pagos.push(d);
+          }
+        } else {
+          // Devendo nunca some
+          devendo.push(d);
+        }
+      });
+      // Executa deletes assíncronos sem bloquear render
+      Promise.allSettled(tarefasDelete);
+
+      // Ordenações:
+      devendo.sort((a,b)=> new Date(b.dataDevendo)-new Date(a.dataDevendo));
+      pagos.sort((a,b)=> new Date(b.dataPago||b.dataDevendo)-new Date(a.dataPago||a.dataDevendo));
+      apagados.sort((a,b)=> new Date(b.dataApagada||b.dataDevendo)-new Date(a.dataApagada||a.dataDevendo));
+
+      lista.innerHTML = "";
+
+      const renderDevendo = (d,iOffset=0) => {
+        const div = document.createElement("div");
+        div.className = "devedor";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
+          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+          <button class="btn-devendo" onclick="marcarPago(${iOffset})">Devendo</button>
+          ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+              ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : "" }
+        `;
+        lista.appendChild(div);
+      };
+
+      const renderPago = (d,iOffset=0) => {
+        const div = document.createElement("div");
+        div.className = "devedor";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
+          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+          <button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>
+${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>
+          ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
+              ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : "" }
+        `;
+        lista.appendChild(div);
+      };
+
+      const renderApagado = (d) => {
+        const div = document.createElement("div");
+        div.className = "devedor apagada";
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}<br>
+          <span style="font-size:13px;color:#555;">
+            Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em
+            ${d.dataApagada ? new Date(d.dataApagada).toLocaleString() : "-"}
+          </span><br>
+          <em>Motivo: ${d.motivoExclusao || "Não informado"}</em>
+        `;
+        lista.appendChild(div);
+      };
+
+      // Para manter os índices corretos nos botões (marcarPago/excluir),
+      // reconstruímos um vetor na ordem de exibição:
+      const exibicao = [...devendo, ...pagos, ...apagados];
+      exibicao.forEach((d, idx) => {
+        if (d.removida) renderApagado(d);
+        else if (d.pago) renderPago(d, idx);
+        else renderDevendo(d, idx);
+      });
+
+      // Atualiza referência global para os índices dos botões
+      window._exibicaoAtual = exibicao;
+    }
+
+    async function iniciarListenerRealtime() {
+      const dividasCol = collection(db, "dividas");
+      const q = query(dividasCol, orderBy("dataDevendo", "desc"));
+
+      onSnapshot(q, (querySnapshot) => {
+        devedores = [];
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          devedores.push({
+            id: docSnap.id,
+            nome: data.nome,
+            valor: data.valor,
+            funcionario: data.funcionario,
+            dataDevendo: data.dataDevendo,
+            pago: data.pago,
+            quemPagou: data.quemPagou,
+            dataPago: data.dataPago,
+            removida: data.removida,
+            apagadaPorVagner: data.apagadaPorVagner,
+            dataApagada: data.dataApagada,
+            motivoExclusao: data.motivoExclusao || "",
+          });
+        });
+        atualizarLista();
       });
     }
-  }
 
-  const funcionarioSelect = document.getElementById("funcionario");
-  const senhaInput = document.getElementById("senha");
-  const lembrarSenhaCheckbox = document.getElementById("lembrarSenha");
-  const nomeClienteInput = document.getElementById("nomeCliente");
-  const valorInput = document.getElementById("valor");
-  const lista = document.getElementById("lista");
+    window.adicionarDivida = async function () {
+      const nome = nomeClienteInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      const dataHora = new Date().toISOString();
 
-  funcionarioSelect.addEventListener("change", () => {
-    const sel = funcionarioSelect.value;
-    senhaInput.value = localStorage.getItem(`senha_${sel}`) || "";
-  });
+      if (!nome || isNaN(valor) || valor <= 0) {
+        alert("Preencha nome e valor corretamente!");
+        return;
+      }
+      if (devedores.filter((d) => !d.removida).length >= 100) {
+        alert("Limite de 100 clientes ativos atingido.");
+        return;
+      }
 
-  window.acessarSistema = function () {
-    const funcionario = funcionarioSelect.value;
-    const senha = senhaInput.value;
-    if (!funcionario || senha !== senhas[funcionario]) { alert("Senha incorreta!"); return; }
-    usuarioAtual = funcionario;
-    if (lembrarSenhaCheckbox.checked) localStorage.setItem(`senha_${usuarioAtual}`, senhaInput.value);
-    else localStorage.removeItem(`senha_${usuarioAtual}`);
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("logado-msg").style.display = "flex";
-    document.querySelector("#logado-msg span").textContent = `Logado como ${usuarioAtual}`;
-    document.getElementById("formulario").style.display = "block";
-    pedirPermissaoNotificacao();
-    iniciarListenerRealtime();
-  };
+      await addDoc(collection(db, "dividas"), {
+        nome,
+        valor,
+        funcionario: usuarioAtual,
+        dataDevendo: dataHora,
+        pago: false,
+        quemPagou: "",
+        dataPago: "",
+        removida: false,
+        apagadaPorVagner: false,
+        dataApagada: "",
+        motivoExclusao: "",
+      });
 
-  window.sair = function () { location.reload(); };
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
 
-  function fmtValor(v) {
-    return (Number(v) || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  }
+    window.marcarPago = async function (index) {
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d || d.pago || d.removida) return;
+      const docRef = doc(db, "dividas", d.id);
+      await updateDoc(docRef, {
+        pago: true,
+        quemPagou: usuarioAtual,
+        dataPago: new Date().toISOString(),
+      });
+    };
 
-  function atualizarLista() {
-    lista.innerHTML = "";
-    devedores.forEach((d, idx) => {
-      const div = document.createElement("div");
-      div.className = "devedor";
-      div.innerHTML = `<strong>${d.nome}</strong> - ${fmtValor(d.valor)}
-        <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
-        ${d.pago ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>`
-                 : `<button class="btn-devendo" onclick="marcarPago(${idx})">Devendo</button>`}
-        ${ (usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir(${idx})">Excluir</button>` : "" }`;
-      lista.appendChild(div);
-    });
-    window._exibicaoAtual = devedores;
-  }
+    window.excluir = async function (index) {
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d) return;
 
-  async function iniciarListenerRealtime() {
-    const dividasCol = collection(db, "dividas");
-    const q = query(dividasCol, orderBy("dataDevendo", "desc"));
-    let ultimaLista = [];
-    onSnapshot(q, (querySnapshot) => {
-      const novaLista = [];
-      querySnapshot.forEach(docSnap => novaLista.push({ id: docSnap.id, ...docSnap.data() }));
+      if (usuarioAtual !== d.funcionario && usuarioAtual !== "Vagner") {
+        alert("Só quem anotou ou Vagner pode excluir.");
+        return;
+      }
+
+      const docRef = doc(db, "dividas", d.id);
+
       if (usuarioAtual === "Vagner") {
-        novaLista.forEach(item => {
-          const antes = ultimaLista.find(a => a.id === item.id);
-          if (item.pago && (!antes || !antes.pago)) {
-            if (Notification.permission === "granted") {
-              new Notification(`Pagamento: ${item.nome} - ${fmtValor(item.valor)}`);
-            }
-          }
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: true,
+          dataApagada: new Date().toISOString(),
+          motivoExclusao: "Excluído pelo ADM Vagner",
+        });
+      } else {
+        const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):");
+        if (!motivo) { alert("Motivo é obrigatório."); return; }
+        if (motivo.length > 100) { alert("Motivo deve ter até 100 caracteres."); return; }
+        await updateDoc(docRef, {
+          removida: true,
+          apagadaPorVagner: false,
+          dataApagada: new Date().toISOString(),
+          motivoExclusao: motivo,
         });
       }
-      ultimaLista = novaLista;
-      devedores = novaLista;
-      atualizarLista();
-    });
-  }
+    };
+  </script>
 
-  window.adicionarDivida = async function () {
-    const nome = nomeClienteInput.value.trim();
-    const valor = parseFloat(valorInput.value);
-    if (!nome || isNaN(valor) || valor <= 0) { alert("Preencha nome e valor corretamente!"); return; }
-    await addDoc(collection(db, "dividas"), {
-      nome, valor, funcionario: usuarioAtual, dataDevendo: new Date().toISOString(),
-      pago: false, quemPagou: "", dataPago: ""
-    });
-    nomeClienteInput.value = ""; valorInput.value = "";
-  };
 
-  window.marcarPago = async function (index) {
-    const d = (window._exibicaoAtual || [])[index];
-    if (!d || d.pago) return;
-    await updateDoc(doc(db, "dividas", d.id), {
-      pago: true, quemPagou: usuarioAtual, dataPago: new Date().toISOString()
-    });
-  };
-
-  window.excluir = async function (index) {
-    const d = (window._exibicaoAtual || [])[index];
-    if (!d) return;
-    await deleteDoc(doc(db, "dividas", d.id));
-  };
-</script>
-
-</body>
-</html>
