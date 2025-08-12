@@ -4,222 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Controle de Dívidas com Firebase</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 20px 0 80px 0; }
-    h2 { text-align: center; color: #333; }
-    .container { max-width: 700px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .form-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-    input, button, select { flex: 1 1 150px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
-    button { background: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .devedor { background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff; border-radius: 8px; margin-bottom: 15px; }
-    .devedor strong { font-size: 18px; }
-    .info { font-size: 14px; color: #555; margin: 5px 0; }
-    .btn-devendo, .btn-pago, .btn-excluir { padding: 8px 12px; margin-top: 5px; border: none; border-radius: 5px; font-weight: bold; font-size: 14px; }
-    .btn-devendo { background-color: #000; color: white; cursor: pointer; }
-    .btn-pago { background-color: #28a745; color: white; cursor: default; }
-    .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
-    .btn-excluir:hover { background-color: #c82333; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; color:#333; }
-    .muted { font-size:13px; color:#666; }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
 
-    <div class="form-group" id="box-login">
-      <select id="usuario">
-        <option value="">-- Selecione Usuário --</option>
-        <option value="Karol">Karol</option>
-        <option value="Rodrigo">Rodrigo</option>
-        <option value="Gabriela">Gabriela</option>
-        <option value="Vagner">Vagner (ADM)</option>
-      </select>
-      <input type="password" id="senha" placeholder="Senha">
-      <button onclick="login()">Entrar</button>
-    </div>
-
-    <div id="painel" style="display:none;">
-      <div class="topbar">
-        <div id="logged" class="muted"></div>
-      </div>
-
+    <div id="login-section">
       <div class="form-group">
-        <input type="text" id="nome" placeholder="Nome do cliente">
-        <input type="number" id="valor" placeholder="Valor R$" step="0.01" inputmode="decimal">
-        <button onclick="adicionar()">Adicionar Dívida</button>
+        <select id="funcionario">
+          <option value="">-- Selecione Funcionário --</option>
+          <option value="Karol">Karol</option>
+          <option value="Rodrigo">Rodrigo</option>
+          <option value="Gabriela">Gabriela</option>
+          <option value="Vagner">Vagner (ADM)</option>
+        </select>
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="acessarSistema()">Entrar</button>
       </div>
-
-      <div id="lista"></div>
+      <div class="form-group" style="margin-top:-10px;">
+        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
+      </div>
     </div>
+
+    <div id="logado-msg" style="display:none;">
+      <span></span>
+      <button id="btn-sair" onclick="sair()">Sair</button>
+    </div>
+
+    <div id="formulario" style="display:none;">
+      <div class="form-group">
+        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
+        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
+        <button onclick="adicionarDivida()">Adicionar Dívida</button>
+      </div>
+    </div>
+
+    <div id="lista" style="margin-top:20px;"></div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, updateDoc, doc, query, orderBy, onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-    import {
-      getMessaging, getToken, onMessage, isSupported
-    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging.js";
+  <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+  </a>
 
-    // === Firebase ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
-      authDomain: "adrjb-99601.firebaseapp.com",
-      projectId: "adrjb-99601",
-      storageBucket: "adrjb-99601.appspot.com",
-      messagingSenderId: "688129341856",
-      appId: "1:688129341856:web:c0a378171329e52c038cc5",
-      measurementId: "G-2BXZJ9LETC"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // === Estado do usuário ===
-    let usuario = "";
-    const senhas = {
-      Karol: "14",
-      Rodrigo: "@4",
-      Gabriela: "66",
-      Vagner: "admin" // ADM
-    };
-
-    // === Notificações (mantido como antes) ===
-    async function setupNotifications() {
-      const suportado = await isSupported();
-      if (!suportado) return;
-
-      try {
-        const messaging = getMessaging(app);
-        // IMPORTANTE: garanta que /firebase-messaging-sw.js existe no seu host
-        const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-
-        const token = await getToken(messaging, {
-          vapidKey: "BEn8r9tRN4vgS8B9g5ofXFgjFndMUZIEsdRdZMkSYEB-OgHzyECeetW48CapDncZAPbvW02KYZcMV6Scwshsfto",
-          serviceWorkerRegistration: reg
-        });
-
-        // Salva token do ADM
-        if (usuario === "Vagner" && token) {
-          await addDoc(collection(db, "admins/Vagner/tokens"), {
-            createdAt: new Date().toISOString(),
-            token
-          });
-        }
-
-        onMessage(messaging, (payload) => {
-          alert("Notificação recebida: " + (payload?.notification?.title || "Nova atualização"));
-        });
-      } catch (e) {
-        console.warn("FCM não configurado:", e);
-      }
-    }
-
-    // === Login ===
-    window.login = () => {
-      const u = document.getElementById("usuario").value;
-      const s = document.getElementById("senha").value;
-      if (!senhas[u] || senhas[u] !== s) return alert("Senha incorreta!");
-      usuario = u;
-
-      document.getElementById("box-login").style.display = "none";
-      document.getElementById("painel").style.display = "block";
-      document.getElementById("logged").textContent = `Você está logado como: ${usuario}${usuario === "Vagner" ? " (ADM)" : ""}`;
-
-      if (usuario === "Vagner") {
-        Notification.requestPermission().then(p => { if (p === "granted") setupNotifications(); });
-      }
-
-      iniciar();
-    };
-
-    // === Carregar lista (oculta itens apagados) ===
-    function iniciar() {
-      const q = query(collection(db, "dividas"), orderBy("dataDevendo", "desc"));
-      onSnapshot(q, snap => {
-        const lista = document.getElementById("lista");
-        lista.innerHTML = "";
-
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-
-          // Se estiver marcada como apagada, não exibe (some da lista)
-          if (d.apagada === true) return;
-
-          const div = document.createElement("div");
-          div.className = "devedor";
-
-          const valorFmt = Number(d.valor).toFixed(2);
-          const quandoDev = d.dataDevendo ? new Date(d.dataDevendo).toLocaleString() : "";
-          const quandoPago = d.dataPago ? new Date(d.dataPago).toLocaleString() : "";
-
-          let botoes = "";
-          if (!d.pago) {
-            botoes += `<button class="btn-devendo" onclick="pagar('${docSnap.id}')">Marcar como Pago</button>`;
-          } else {
-            botoes += `<button class="btn-pago" disabled>Pago</button>`;
-          }
-
-          // Botão de excluir só aparece para ADM
-          if (usuario === "Vagner") {
-            botoes += `<button class="btn-excluir" onclick="excluir('${docSnap.id}')">Excluir</button>`;
-          }
-
-          div.innerHTML = `
-            <strong>${d.nome}</strong> - R$ ${valorFmt}
-            <div class="info">por ${d.funcionario || "-"} em ${quandoDev}</div>
-            ${d.pago ? `<div class="info">Pago por ${d.quemPagou || "-"} em ${quandoPago}</div>` : ""}
-            ${botoes}
-          `;
-          lista.appendChild(div);
-        });
-      });
-    }
-
-    // === Adicionar dívida (padrão mantido) ===
-    window.adicionar = async () => {
-      const nome = document.getElementById("nome").value.trim();
-      const valor = document.getElementById("valor").value;
-      if (!nome || !valor) return alert("Preencha todos os campos!");
-
-      await addDoc(collection(db, "dividas"), {
-        nome,
-        valor: Number(valor),
-        funcionario: usuario,
-        dataDevendo: new Date().toISOString(),
-        pago: false,
-        apagada: false
-      });
-
-      document.getElementById("nome").value = "";
-      document.getElementById("valor").value = "";
-    };
-
-    // === Marcar como pago (padrão mantido) ===
-    window.pagar = async (id) => {
-      const ref = doc(db, "dividas", id);
-      await updateDoc(ref, {
-        pago: true,
-        quemPagou: usuario,
-        dataPago: new Date().toISOString()
-      });
-    };
-
-    // === Excluir (somente ADM) — some da lista após marcar apagada:true ===
-    window.excluir = async (id) => {
-      if (usuario !== "Vagner") return alert("Apenas o ADM pode excluir.");
-      const confirmar = confirm("Tem certeza que deseja excluir este registro? Ele deixará de aparecer para todos.");
-      if (!confirmar) return;
-      const ref = doc(db, "dividas", id);
-      await updateDoc(ref, {
-        apagada: true,
-        apagadaPor: usuario,
-        dataApagada: new Date().toISOString()
-      });
-    };
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
