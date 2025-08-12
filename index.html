@@ -26,7 +26,8 @@
     .actions { display:flex; gap:6px; align-items:center; flex-wrap: nowrap; }
     .actions .btn-devendo, .actions .btn-pago, .actions .btn-excluir {
       padding: 6px 10px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; line-height: 1.1;
-      flex: 0 0 auto; /* impede ocupar largura toda */
+      flex: 0 0 auto;
+      display: inline-flex; align-items: center; justify-content: center; gap:6px;
     }
     .btn-devendo { background-color: #000; color: white; cursor: pointer; }
     .btn-pago { background-color: #28a745; color: white; cursor: default; }
@@ -42,10 +43,8 @@
     .whatsapp-btn i { line-height: 56px; }
 
     @media (max-width: 480px) {
-      /* Só os campos do formulário ocupam 100% — os botões das dívidas NÃO */
       .form-group { flex-direction: column; }
       .form-group input, .form-group select, .form-group button { flex: 1 1 100%; }
-      /* garante que os botões de ação continuem pequenos no mobile */
       .actions { gap: 6px; flex-wrap: nowrap; }
       .actions button { flex: 0 0 auto; }
     }
@@ -207,7 +206,7 @@
             ? `<button class="btn-pago" disabled>Pago</button>`
             : `<button class="btn-devendo" onclick="marcarPago('${d.id}')">Marcar Pago</button>`}
           ${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner")
-            ? `<button class="btn-excluir" onclick="excluir('${d.id}', ${d.removida})">Excluir</button>`
+            ? `<button class="btn-excluir" title="Excluir" onclick="excluir('${d.id}', ${d.removida})"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>`
             : ``}
         </div>
         ${d.removida && !d.apagadaPorVagner ? `<div class="info"><em>Motivo: ${d.motivoExclusao || "Não informado"}</em></div>` : ""}
@@ -250,6 +249,8 @@
 
     window.marcarPago = async function (id) {
       if (!usuarioAtual) return alert("Faça login.");
+      // vibração curta ao marcar pago
+      if (navigator.vibrate) navigator.vibrate(30);
       await updateDoc(doc(db, "dividas", id), {
         pago: true, quemPagou: usuarioAtual, dataPago: new Date().toISOString()
       });
