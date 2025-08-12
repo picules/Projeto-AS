@@ -4,13 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Controle de Dívidas com Firebase</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 20px 0 80px 0; }
     h2 { text-align: center; color: #333; }
     .container { max-width: 700px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     .form-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-    input, select, button { flex: 1 1 150px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+    input, button, select { flex: 1 1 150px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
     button { background: #007bff; color: white; border: none; cursor: pointer; }
     button:hover { background: #0056b3; }
     .devedor { background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff; border-radius: 8px; margin-bottom: 15px; }
@@ -22,73 +21,137 @@
     .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
     .btn-excluir:hover { background-color: #c82333; }
     .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
-    #login-section { transition: opacity 0.5s ease; }
-    #logado-msg { font-size: 20px; color: #007bff; font-weight: bold; text-align: center; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 15px; }
-    #btn-sair { background: #dc3545; border: none; color: white; font-weight: bold; padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 14px; }
-    #btn-sair:hover { background: #b02a37; }
-    @media (max-width: 480px) { .form-group { flex-direction: column; } input, select, button { flex: 1 1 100%; } #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; } .btn-excluir { margin-left: 0; margin-top: 10px; } }
-    .whatsapp-btn { position: fixed; bottom: 15px; right: 15px; background-color: #25d366; color: white; border-radius: 50%; width: 56px; height: 56px; text-align: center; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; cursor: pointer; transition: background-color 0.3s ease; }
-    .whatsapp-btn:hover { background-color: #128c4a; }
-    .whatsapp-btn i { line-height: 56px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
-    <div id="login-section">
+    <div class="form-group">
+      <select id="usuario">
+        <option value="">-- Selecione Usuário --</option>
+        <option value="Karol">Karol</option>
+        <option value="Rodrigo">Rodrigo</option>
+        <option value="Gabriela">Gabriela</option>
+        <option value="Vagner">Vagner (ADM)</option>
+      </select>
+      <input type="password" id="senha" placeholder="Senha">
+      <button onclick="login()">Entrar</button>
+    </div>
+    <div id="painel" style="display:none;">
       <div class="form-group">
-        <select id="funcionario">
-          <option value="">-- Selecione Funcionário --</option>
-          <option value="Karol">Karol</option>
-          <option value="Rodrigo">Rodrigo</option>
-          <option value="Gabriela">Gabriela</option>
-          <option value="Vagner">Vagner (ADM)</option>
-        </select>
-        <input type="password" id="senha" placeholder="Senha">
-        <button onclick="acessarSistema()">Entrar</button>
+        <input type="text" id="nome" placeholder="Nome do cliente">
+        <input type="number" id="valor" placeholder="Valor R$">
+        <button onclick="adicionar()">Adicionar Dívida</button>
       </div>
-      <div class="form-group" style="margin-top:-10px;">
-        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
-      </div>
+      <div id="lista"></div>
     </div>
-    <div id="logado-msg" style="display:none;">
-      <span></span>
-      <button id="btn-sair" onclick="sair()">Sair</button>
-    </div>
-    <div id="formulario" style="display:none;">
-      <div class="form-group">
-        <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
-        <input type="number" id="valor" placeholder="Valor da dívida (R$)" step="0.01" min="0.01">
-        <button onclick="adicionarDivida()">Adicionar Dívida</button>
-      </div>
-    </div>
-    <div id="lista" style="margin-top:20px;"></div>
   </div>
-  <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
-    <i class="fab fa-whatsapp"></i>
-  </a>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-    const firebaseConfig = { apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8", authDomain: "adrjb-99601.firebaseapp.com", projectId: "adrjb-99601", storageBucket: "adrjb-99601.appspot.com", messagingSenderId: "688129341856", appId: "1:688129341856:web:c0a378171329e52c038cc5", measurementId: "G-2BXZJ9LETC" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app);
-    const senhas = { Karol: "14", Rodrigo: "@4", Gabriela: "66", Vagner: "admin" };
-    let devedores = []; let usuarioAtual = "";
-    const loginSection = document.getElementById("login-section"), logadoMsg = document.getElementById("logado-msg"), formulario = document.getElementById("formulario"), lista = document.getElementById("lista"), funcionarioSelect = document.getElementById("funcionario"), senhaInput = document.getElementById("senha"), lembrarSenhaCheckbox = document.getElementById("lembrarSenha"), nomeClienteInput = document.getElementById("nomeCliente"), valorInput = document.getElementById("valor");
-    funcionarioSelect.addEventListener("change", () => { const sel = funcionarioSelect.value; senhaInput.value = localStorage.getItem(`senha_${sel}`) || ""; });
-    function mostrarLogin(m) { loginSection.style.display = m ? "block" : "none"; }
-    function mostrarLogadoMsg(m) { if (m) { logadoMsg.querySelector("span").textContent = `Logado como ${usuarioAtual}`; logadoMsg.style.display = "flex"; } else { logadoMsg.style.display = "none"; } }
-    function mostrarFormulario(m) { formulario.style.display = m ? "block" : "none"; }
-    function mostrarLista(m) { lista.style.display = m ? "block" : "none"; }
-    window.acessarSistema = function () { const funcionario = funcionarioSelect.value; const senha = (senhaInput.value || "").trim(); if (!funcionario || senha !== senhas[funcionario]) { alert("Senha incorreta!"); return; } usuarioAtual = funcionario; if (lembrarSenhaCheckbox.checked) { localStorage.setItem(`senha_${usuarioAtual}`, senhaInput.value); } else { localStorage.removeItem(`senha_${usuarioAtual}`); } mostrarLogin(false); mostrarLogadoMsg(true); mostrarFormulario(true); mostrarLista(true); iniciarListenerRealtime(); };
-    window.sair = function () { usuarioAtual = ""; mostrarLogin(true); mostrarLogadoMsg(false); mostrarFormulario(false); mostrarLista(false); senhaInput.value = ""; funcionarioSelect.value = ""; lista.innerHTML = ""; nomeClienteInput.value = ""; valorInput.value = ""; };
-    function diasDesde(isoDate) { if (!isoDate) return Infinity; const ms = Date.now() - new Date(isoDate).getTime(); return ms / (1000 * 60 * 60 * 24); }
-    function fmtValor(v) { try { return (Number(v) || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); } catch { return `R$ ${Number(v).toFixed(2)}`; } }
-    function atualizarLista() { const devendo = [], pagos = [], apagados = [], tarefasDelete = []; devedores.forEach(d => { if (d.removida) { if (diasDesde(d.dataApagada) >= 15 && d.id) { tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id))); } else { apagados.push(d); } } else if (d.pago) { if (diasDesde(d.dataPago) >= 20 && d.id) { tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id))); } else { pagos.push(d); } } else { devendo.push(d); } }); Promise.allSettled(tarefasDelete); devendo.sort((a,b)=> new Date(b.dataDevendo)-new Date(a.dataDevendo)); pagos.sort((a,b)=> new Date(b.dataPago||b.dataDevendo)-new Date(a.dataPago||a.dataDevendo)); apagados.sort((a,b)=> new Date(b.dataApagada||b.dataDevendo)-new Date(a.dataApagada||a.dataDevendo)); lista.innerHTML = ""; const renderDevendo = (d,iOffset=0) => { const div = document.createElement("div"); div.className = "devedor"; div.innerHTML = `<strong>${d.nome}</strong> - ${fmtValor(d.valor)}<div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div><button class="btn-devendo" onclick="marcarPago(${iOffset})">Devendo</button>${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : ""}`; lista.appendChild(div); }; const renderPago = (d,iOffset=0) => { const div = document.createElement("div"); div.className = "devedor"; div.innerHTML = `<strong>${d.nome}</strong> - ${fmtValor(d.valor)}<div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div><button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir(${iOffset})">Excluir</button>` : ""}`; lista.appendChild(div); }; const renderApagado = (d) => { const div = document.createElement("div"); div.className = "devedor apagada"; div.innerHTML = `<strong>${d.nome}</strong> - ${fmtValor(d.valor)}<br><span style="font-size:13px;color:#555;">Apagada por ${d.apagadaPorVagner ? "Vagner" : d.funcionario} em ${d.dataApagada ? new Date(d.dataApagada).toLocaleString() : "-"}</span><br><em>Motivo: ${d.motivoExclusao || "Não informado"}</em>`; lista.appendChild(div); }; const exibicao = [...devendo, ...pagos, ...apagados]; exibicao.forEach((d, idx) => { if (d.removida) renderApagado(d); else if (d.pago) renderPago(d, idx); else renderDevendo(d, idx); }); window._exibicaoAtual = exibicao; }
-    async function iniciarListenerRealtime() { const dividasCol = collection(db, "dividas"); const q = query(dividasCol, orderBy("dataDevendo", "desc")); onSnapshot(q, (querySnapshot) => { devedores = []; querySnapshot.forEach((docSnap) => { const data = docSnap.data(); devedores.push({ id: docSnap.id, nome: data.nome, valor: data.valor, funcionario: data.funcionario, dataDevendo: data.dataDevendo, pago: data.pago, quemPagou: data.quemPagou, dataPago: data.dataPago, removida: data.removida, apagadaPorVagner: data.apagadaPorVagner, dataApagada: data.dataApagada, motivoExclusao: data.motivoExclusao || "" }); }); atualizarLista(); }, (err) => { console.error(err); alert("Erro no listener do Firestore: " + (err?.message || err)); }); }
-    window.adicionarDivida = async function () { const nome = (nomeClienteInput.value || "").trim(); const valor = parseFloat(valorInput.value); const dataHora = new Date().toISOString(); if (!nome || isNaN(valor) || valor <= 0) { alert("Preencha nome e valor corretamente!"); return; } if (devedores.filter((d) => !d.removida).length >= 100) { alert("Limite de 100 clientes ativos atingido."); return; } try { await addDoc(collection(db, "dividas"), { nome, valor, funcionario: usuarioAtual, dataDevendo: dataHora, pago: false, quemPagou: "", dataPago: "", removida: false, apagadaPorVagner: false, dataApagada: "", motivoExclusao: "" }); nomeClienteInput.value = ""; valorInput.value = ""; } catch (e) { console.error(e); alert("Falha ao salvar no Firestore: " + (e?.message || e)); } };
-    window.marcarPago = async function (index) { const d = (window._exibicaoAtual || [])[index]; if (!d || d.pago || d.removida) return; try { const docRef = doc(db, "dividas", d.id); await updateDoc(docRef, { pago: true, quemPagou: usuarioAtual, dataPago: new Date().toISOString() }); } catch (e) { console.error(e); alert("Falha ao marcar como pago: " + (e?.message || e)); } };
-    window.excluir = async function (index) { const d = (window._exibicaoAtual || [])[index]; if (!d) return; if (usuarioAtual !== d.funcionario && usuarioAtual !== "Vagner") { alert("Só quem anotou ou Vagner pode excluir."); return; } try { const docRef = doc(db, "dividas", d.id); if (usuarioAtual === "Vagner") { await updateDoc(docRef, { removida: true, apagadaPorVagner: true, dataApagada: new Date().toISOString(), motivoExclusao: "Excluído pelo ADM Vagner" }); } else { const motivo = prompt("Informe o motivo da exclusão (até 100 caracteres):"); if (!motivo) { alert("Motivo é obrigatório."); return; } if (motivo.length > 100) { alert("Motivo deve ter até 100 caracteres."); return; } await updateDoc(docRef, { removida: true, apagadaPorVagner: false, dataApagada: new Date().toISOString(), motivoExclusao: motivo }); } } catch (e) { console.error(e); alert("Falha ao excluir: " + (e?.message || e)); } };
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    import {
+      getMessaging, getToken, onMessage, isSupported
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
+      authDomain: "adrjb-99601.firebaseapp.com",
+      projectId: "adrjb-99601",
+      storageBucket: "adrjb-99601.appspot.com",
+      messagingSenderId: "688129341856",
+      appId: "1:688129341856:web:c0a378171329e52c038cc5",
+      measurementId: "G-2BXZJ9LETC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let usuario = "";
+
+    async function setupNotifications() {
+      const suportado = await isSupported();
+      if (!suportado) return;
+
+      const messaging = getMessaging(app);
+      const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+      const token = await getToken(messaging, {
+        vapidKey: "BEn8r9tRN4vgS8B9g5ofXFgjFndMUZIEsdRdZMkSYEB-OgHzyECeetW48CapDncZAPbvW02KYZcMV6Scwshsfto",
+        serviceWorkerRegistration: reg
+      });
+
+      if (usuario === "Vagner" && token) {
+        await addDoc(collection(db, "admins/Vagner/tokens"), {
+          createdAt: new Date().toISOString(),
+          token
+        });
+      }
+
+      onMessage(messaging, (payload) => {
+        alert("Notificação recebida: " + (payload?.notification?.title || ""));
+      });
+    }
+
+    const senhas = {
+      Karol: "14",
+      Rodrigo: "@4",
+      Gabriela: "66",
+      Vagner: "admin"
+    };
+
+    window.login = () => {
+      const u = document.getElementById("usuario").value;
+      const s = document.getElementById("senha").value;
+      if (!senhas[u] || senhas[u] !== s) return alert("Senha incorreta!");
+      usuario = u;
+      document.getElementById("painel").style.display = "block";
+      if (usuario === "Vagner") {
+        Notification.requestPermission().then(p => {
+          if (p === "granted") setupNotifications();
+        });
+      }
+      iniciar();
+    };
+
+    async function iniciar() {
+      const q = query(collection(db, "dividas"), orderBy("dataDevendo", "desc"));
+      onSnapshot(q, snap => {
+        const lista = document.getElementById("lista");
+        lista.innerHTML = "";
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const div = document.createElement("div");
+          div.className = "devedor";
+          div.innerHTML = `<strong>${d.nome}</strong> - R$ ${Number(d.valor).toFixed(2)}
+            <div class="info">por ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+            ${!d.pago ? `<button class="btn-devendo" onclick="pagar('${docSnap.id}')">Marcar como Pago</button>` : `<button class="btn-pago" disabled>Pago</button>`}
+          `;
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    window.adicionar = async () => {
+      const nome = document.getElementById("nome").value;
+      const valor = document.getElementById("valor").value;
+      if (!nome || !valor) return alert("Preencha todos os campos!");
+      await addDoc(collection(db, "dividas"), {
+        nome, valor, funcionario: usuario, dataDevendo: new Date().toISOString(), pago: false
+      });
+      document.getElementById("nome").value = "";
+      document.getElementById("valor").value = "";
+    };
+
+    window.pagar = async (id) => {
+      const ref = doc(db, "dividas", id);
+      await updateDoc(ref, {
+        pago: true,
+        quemPagou: usuario,
+        dataPago: new Date().toISOString()
+      });
+    };
   </script>
 </body>
 </html>
