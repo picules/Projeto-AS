@@ -25,7 +25,7 @@
     .btn-pago { background-color: #28a745; color: white; cursor: default; }
     .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
     .btn-excluir:hover { background-color: #c82333; }
-    .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
+    .apagada { background-color: #f1f1f1; color: #777; opacity: 0.8; border-left-color: #bbb; }
     #login-section { transition: opacity 0.5s ease; }
     #logado-msg {
       font-size: 20px; color: #007bff; font-weight: bold;
@@ -55,6 +55,21 @@
     }
     .whatsapp-btn:hover { background-color: #128c4a; }
     .whatsapp-btn i { line-height: 56px; }
+
+    /* Selos de status + títulos de seção */
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600; }
+    .badge-open{ background:#fff1c2; color:#7a5b00; border:1px solid #ffd66b; }
+    .badge-paid{ background:#d1f7d9; color:#0f5132; border:1px solid #82e6a0; }
+    .badge-removed{ background:#e9ecef; color:#495057; border:1px solid #ced4da; }
+    .section-title{ margin:18px 0 8px; font-weight:700; color:#333; display:flex; align-items:center; gap:8px; }
+    .section-title small{ color:#666; font-weight:600; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .notify-card {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: 88px; background: #0b5ed7; color: #fff; padding: 10px 12px;
+      border-radius: 10px; box-shadow: 0 8px 20px rgba(2,6,23,.2); display:none; z-index: 1100;
+    }
+    .notify-card a { color:#fff; text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -88,12 +103,19 @@
       </div>
     </div>
 
-    <div id="lista" style="margin-top:20px;"></div>
+    <div id="lista" style="margin-top:10px;"></div>
   </div>
+
+  <div id="notify" class="notify-card"></div>
 
   <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
+
+  <!-- beep mínimo embutido em base64 (curtinho) -->
+  <audio id="beep" preload="auto">
+    <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA..." type="audio/mp3">
+  </audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
@@ -101,6 +123,7 @@
       getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
+    // === Firebase ===
     const firebaseConfig = {
       apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
       authDomain: "adrjb-99601.firebaseapp.com",
@@ -114,37 +137,74 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // === Login simples ===
     const senhas = { Karol: "14", Rodrigo: "@4", Gabriela: "66", Vagner: "admin" };
-    let usuarioAtual = "", devedores = [];
+    let usuarioAtual = "";
+    let devedores = [];
+    let ultimoSnapshot = new Map(); // id -> {pago:boolean}
+
+    // Autologin ADM por query param ?adm=1
+    const usp = new URLSearchParams(location.search);
+    if (usp.get("adm") === "1") {
+      localStorage.setItem("usuarioAtual", "Vagner");
+    }
+    // Recupera último login
+    const salvo = localStorage.getItem("usuarioAtual");
+    if (salvo && senhas[salvo]) {
+      usuarioAtual = salvo;
+      posLogin();
+      iniciarListenerRealtime();
+    }
 
     window.acessarSistema = function () {
       const func = document.getElementById("funcionario").value;
       const senha = document.getElementById("senha").value;
       if (!senhas[func] || senha !== senhas[func]) return alert("Senha incorreta!");
       usuarioAtual = func;
+      localStorage.setItem("usuarioAtual", usuarioAtual);
+      posLogin();
+      iniciarListenerRealtime();
+    };
+
+    function posLogin() {
       document.getElementById("login-section").style.display = "none";
       document.getElementById("logado-msg").style.display = "flex";
       document.querySelector("#logado-msg span").textContent = `Logado como ${usuarioAtual}`;
       document.getElementById("formulario").style.display = "block";
       document.getElementById("lista").style.display = "block";
-      iniciarListenerRealtime();
-    };
+    }
 
     window.sair = function () {
       usuarioAtual = "";
+      localStorage.removeItem("usuarioAtual");
       document.getElementById("login-section").style.display = "block";
       document.getElementById("logado-msg").style.display = "none";
       document.getElementById("formulario").style.display = "none";
       document.getElementById("lista").innerHTML = "";
+      ultimoSnapshot.clear();
     };
 
     function diasDesde(data) {
       return (Date.now() - new Date(data).getTime()) / (1000 * 60 * 60 * 24);
     }
 
+    function tituloSecao(texto, classe, qtd) {
+      const h = document.createElement("div");
+      h.className = "section-title";
+      const badge = document.createElement("span");
+      badge.className = "badge " + classe;
+      badge.textContent = texto;
+      const small = document.createElement("small");
+      small.textContent = `(${qtd})`;
+      h.appendChild(badge);
+      h.appendChild(small);
+      return h;
+    }
+
     function atualizarLista() {
       const lista = document.getElementById("lista");
       lista.innerHTML = "";
+
       const deletar = [];
       const visiveis = devedores.filter(d => {
         if (d.removida && d.apagadaPorVagner) {
@@ -154,31 +214,98 @@
         return true;
       });
 
-      visiveis.forEach((d, i) => {
-        const div = document.createElement("div");
-        div.className = "devedor" + (d.removida ? " apagada" : "");
-        div.innerHTML = `
-          <strong>${d.nome}</strong> - R$ ${Number(d.valor).toFixed(2)}
-          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
-          ${d.pago ? `<button class="btn-pago" disabled>Pago</button>` : `<button class="btn-devendo" onclick="marcarPago('${d.id}')">Devendo</button>`}
-          ${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir('${d.id}', ${d.removida})">Excluir</button>` : ""}
-          ${d.removida && !d.apagadaPorVagner ? `<div class="info"><em>Motivo: ${d.motivoExclusao || "Não informado"}</em></div>` : ""}
-        `;
-        lista.appendChild(div);
-      });
+      // Quebra por status
+      const abertos = visiveis.filter(d => !d.removida && !d.pago)
+        .sort((a,b) => new Date(b.dataDevendo) - new Date(a.dataDevendo));
+      const pagos = visiveis.filter(d => !d.removida && d.pago)
+        .sort((a,b) => new Date(b.dataPago||0) - new Date(a.dataPago||0));
+      const removidos = visiveis.filter(d => d.removida && !d.apagadaPorVagner)
+        .sort((a,b) => new Date(b.dataApagada||0) - new Date(a.dataApagada||0));
+
+      // Render: Abertos -> Pagos -> Removidos
+      if (abertos.length) lista.appendChild(tituloSecao("Devendo", "badge-open", abertos.length));
+      abertos.forEach(d => lista.appendChild(cardDivida(d)));
+
+      if (pagos.length) lista.appendChild(tituloSecao("Pagos", "badge-paid", pagos.length));
+      pagos.forEach(d => lista.appendChild(cardDivida(d)));
+
+      if (removidos.length) lista.appendChild(tituloSecao("Removidos (funcionários)", "badge-removed", removidos.length));
+      removidos.forEach(d => lista.appendChild(cardDivida(d)));
 
       deletar.forEach(id => deleteDoc(doc(db, "dividas", id)));
+    }
+
+    function cardDivida(d) {
+      const div = document.createElement("div");
+      div.className = "devedor" + (d.removida ? " apagada" : "");
+      const valorFmt = Number(d.valor).toFixed(2);
+      const linhaStatus = d.removida
+        ? `<span class="badge badge-removed">Removida</span>`
+        : (d.pago ? `<span class="badge badge-paid">Pago</span>` : `<span class="badge badge-open">Devendo</span>`);
+
+      div.innerHTML = `
+        <strong>${d.nome}</strong> - R$ ${valorFmt} ${linhaStatus}
+        <div class="info">
+          Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}
+          ${d.pago ? `<br>Pago por: ${d.quemPagou} em ${new Date(d.dataPago).toLocaleString()}` : ``}
+        </div>
+        <div class="actions">
+          ${d.pago ? `<button class="btn-pago" disabled>Pago</button>` : `<button class="btn-devendo" onclick="marcarPago('${d.id}')">Marcar como Pago</button>`}
+          ${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir('${d.id}', ${d.removida})">Excluir</button>` : ""}
+        </div>
+        ${d.removida && !d.apagadaPorVagner ? `<div class="info"><em>Motivo: ${d.motivoExclusao || "Não informado"}</em></div>` : ""}
+      `;
+      return div;
     }
 
     function iniciarListenerRealtime() {
       const q = query(collection(db, "dividas"), orderBy("dataDevendo", "desc"));
       onSnapshot(q, snap => {
-        devedores = [];
-        snap.forEach(docSnap => devedores.push({ id: docSnap.id, ...docSnap.data() }));
+        const novos = [];
+        snap.forEach(docSnap => {
+          const data = { id: docSnap.id, ...docSnap.data() };
+          novos.push(data);
+        });
+
+        // Detecta pagamentos novos (para ADM)
+        if (usuarioAtual === "Vagner") {
+          const pagosNovos = [];
+          for (const d of novos) {
+            const prev = ultimoSnapshot.get(d.id);
+            if (d.pago && (!prev || !prev.pago)) {
+              pagosNovos.push(d);
+            }
+          }
+          if (pagosNovos.length) {
+            avisoAdmPagamento(pagosNovos);
+          }
+        }
+
+        devedores = novos;
         atualizarLista();
+
+        // Atualiza mapa de controle
+        ultimoSnapshot.clear();
+        for (const d of novos) ultimoSnapshot.set(d.id, { pago: !!d.pago });
       });
     }
 
+    function avisoAdmPagamento(items) {
+      // beep + vibrate
+      try { document.getElementById('beep').play().catch(()=>{}); } catch(e){}
+      if (navigator.vibrate) { navigator.vibrate([120,60,120]); }
+
+      const n = document.getElementById('notify');
+      const um = items[0];
+      const txt = `Pagamento marcado: ${um.nome} - R$ ${Number(um.valor).toFixed(2)} por ${um.quemPagou || "?"}`;
+      const walink = `https://wa.me/5583996323995?text=${encodeURIComponent("Pagamento confirmado: " + um.nome + " - R$ " + Number(um.valor).toFixed(2) + " (" + (um.quemPagou||"?") + ")")}`;
+      n.innerHTML = `${txt} &nbsp; <a href="${walink}" target="_blank" rel="noopener">Avisar no WhatsApp</a>`;
+      n.style.display = 'block';
+      clearTimeout(window.__notifyTo);
+      window.__notifyTo = setTimeout(()=>{ n.style.display='none'; }, 5500);
+    }
+
+    // === Ações ===
     window.adicionarDivida = async function () {
       const nome = document.getElementById("nomeCliente").value.trim();
       const valor = parseFloat(document.getElementById("valor").value);
@@ -201,8 +328,8 @@
 
     window.excluir = async function (id, jaRemovida) {
       if (jaRemovida) return;
-      let motivo = "";
       const porAdm = usuarioAtual === "Vagner";
+      let motivo = "";
       if (!porAdm) {
         motivo = prompt("Motivo da exclusão:");
         if (!motivo || motivo.length > 100) return alert("Motivo inválido");
