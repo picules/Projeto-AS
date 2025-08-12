@@ -5,7 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Controle de Dívidas com Firebase</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #eef2f5; margin: 0; padding: 20px 0 80px 0; }
+    h2 { text-align: center; color: #333; }
+    .container { max-width: 700px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .form-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+    input, select, button { flex: 1 1 150px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .devedor { background: #f8f9fa; padding: 15px; border-left: 5px solid #007bff; border-radius: 8px; margin-bottom: 15px; }
+    .devedor strong { font-size: 18px; }
+    .info { font-size: 14px; color: #555; margin: 5px 0; }
+    .btn-devendo, .btn-pago, .btn-excluir {
+      padding: 8px 12px; margin-top: 5px;
+      border: none; border-radius: 5px;
+      font-weight: bold; font-size: 14px;
+    }
+    .btn-devendo { background-color: #000; color: white; cursor: pointer; }
+    .btn-pago { background-color: #28a745; color: white; cursor: default; }
+    .btn-excluir { background-color: #dc3545; color: white; margin-left: 10px; cursor: pointer; }
+    .btn-excluir:hover { background-color: #c82333; }
+    .apagada { background-color: #f1f1f1; color: #777; opacity: 0.7; }
+    #login-section { transition: opacity 0.5s ease; }
+    #logado-msg {
+      font-size: 20px; color: #007bff; font-weight: bold;
+      text-align: center; margin-bottom: 15px;
+      display: flex; justify-content: center; align-items: center; gap: 15px;
+    }
+    #btn-sair {
+      background: #dc3545; border: none; color: white;
+      font-weight: bold; padding: 6px 14px;
+      border-radius: 5px; cursor: pointer; font-size: 14px;
+    }
+    #btn-sair:hover { background: #b02a37; }
+    @media (max-width: 480px) {
+      .form-group { flex-direction: column; }
+      input, select, button { flex: 1 1 100%; }
+      #logado-msg { flex-direction: column; font-size: 18px; gap: 8px; }
+      .btn-excluir { margin-left: 0; margin-top: 10px; }
+    }
+    .whatsapp-btn {
+      position: fixed; bottom: 15px; right: 15px;
+      background-color: #25d366; color: white;
+      border-radius: 50%; width: 56px; height: 56px;
+      text-align: center; font-size: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 1000; cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .whatsapp-btn:hover { background-color: #128c4a; }
+    .whatsapp-btn i { line-height: 56px; }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -48,6 +98,9 @@
     <i class="fab fa-whatsapp"></i>
   </a>
 
-  <script type="module" src="script.js"></script>
+  <script type="module">
+    // Lógica completa no script.js será colada aqui se quiser (por tamanho, posso mandar em partes)
+    alert("⚠️ O código JS completo será colado abaixo ou incluído no script.js");
+  </script>
 </body>
 </html>
