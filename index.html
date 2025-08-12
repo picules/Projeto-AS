@@ -60,7 +60,6 @@
 <body>
   <div class="container">
     <h2>Sistema de Controle de Dívidas</h2>
-
     <div id="login-section">
       <div class="form-group">
         <select id="funcionario">
@@ -70,19 +69,13 @@
           <option value="Gabriela">Gabriela</option>
           <option value="Vagner">Vagner (ADM)</option>
         </select>
-        <input type="password" id="senha" placeholder="Senha">
         <button onclick="acessarSistema()">Entrar</button>
       </div>
-      <div class="form-group" style="margin-top:-10px;">
-        <label><input type="checkbox" id="lembrarSenha"> Salvar senha neste terminal</label>
-      </div>
     </div>
-
     <div id="logado-msg" style="display:none;">
       <span></span>
       <button id="btn-sair" onclick="sair()">Sair</button>
     </div>
-
     <div id="formulario" style="display:none;">
       <div class="form-group">
         <input type="text" id="nomeCliente" placeholder="Nome do cliente" autocomplete="off">
@@ -90,17 +83,160 @@
         <button onclick="adicionarDivida()">Adicionar Dívida</button>
       </div>
     </div>
-
     <div id="lista" style="margin-top:20px;"></div>
   </div>
-
   <a href="https://wa.me/5583996323995" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
-
   <script type="module">
-    // Lógica completa no script.js será colada aqui se quiser (por tamanho, posso mandar em partes)
-    alert("⚠️ O código JS completo será colado abaixo ou incluído no script.js");
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfHDdYAW8DkZ-XELvUWhUo3ln5rAu-1h8",
+      authDomain: "adrjb-99601.firebaseapp.com",
+      projectId: "adrjb-99601",
+      storageBucket: "adrjb-99601.appspot.com",
+      messagingSenderId: "688129341856",
+      appId: "1:688129341856:web:c0a378171329e52c038cc5",
+      measurementId: "G-2BXZJ9LETC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const senhas = { Karol: "14", Rodrigo: "@4", Gabriela: "66", Vagner: "admin" };
+    let devedores = [], usuarioAtual = "";
+
+    const funcionarioSelect = document.getElementById("funcionario");
+    const nomeClienteInput = document.getElementById("nomeCliente");
+    const valorInput = document.getElementById("valor");
+    const lista = document.getElementById("lista");
+
+    function mostrarLogin(m) { document.getElementById("login-section").style.display = m ? "block" : "none"; }
+    function mostrarLogadoMsg(m) {
+      const logado = document.getElementById("logado-msg");
+      if (m) {
+        logado.querySelector("span").textContent = `Logado como ${usuarioAtual}`;
+        logado.style.display = "flex";
+      } else {
+        logado.style.display = "none";
+      }
+    }
+    function mostrarFormulario(m) { document.getElementById("formulario").style.display = m ? "block" : "none"; }
+    function mostrarLista(m) { lista.style.display = m ? "block" : "none"; }
+
+    window.acessarSistema = function () {
+      const funcionario = funcionarioSelect.value;
+      if (!funcionario) return alert("Selecione o funcionário");
+      usuarioAtual = funcionario;
+      mostrarLogin(false);
+      mostrarLogadoMsg(true);
+      mostrarFormulario(true);
+      mostrarLista(true);
+      iniciarListenerRealtime();
+    };
+
+    window.sair = function () {
+      usuarioAtual = "";
+      mostrarLogin(true);
+      mostrarLogadoMsg(false);
+      mostrarFormulario(false);
+      mostrarLista(false);
+      funcionarioSelect.value = "";
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+      lista.innerHTML = "";
+    };
+
+    function diasDesde(isoDate) {
+      if (!isoDate) return Infinity;
+      return (Date.now() - new Date(isoDate)) / (1000 * 60 * 60 * 24);
+    }
+
+    function fmtValor(v) {
+      return (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function atualizarLista() {
+      const devendo = [], pagos = [], apagados = [], tarefasDelete = [];
+      devedores.forEach(d => {
+        if (d.removida) {
+          if (diasDesde(d.dataApagada) >= 15) tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          else apagados.push(d);
+        } else if (d.pago) {
+          if (diasDesde(d.dataPago) >= 20) tarefasDelete.push(deleteDoc(doc(db, "dividas", d.id)));
+          else pagos.push(d);
+        } else devendo.push(d);
+      });
+      Promise.allSettled(tarefasDelete);
+
+      const exibicao = [...devendo, ...pagos, ...apagados];
+      lista.innerHTML = "";
+      exibicao.forEach((d, idx) => {
+        const div = document.createElement("div");
+        div.className = "devedor" + (d.removida ? " apagada" : "");
+        div.innerHTML = `
+          <strong>${d.nome}</strong> - ${fmtValor(d.valor)}
+          <div class="info">Anotado por: ${d.funcionario} em ${new Date(d.dataDevendo).toLocaleString()}</div>
+          ${d.pago ? `<button class="btn-pago" disabled>Pago por ${d.quemPagou || "-"}<br>${d.dataPago ? new Date(d.dataPago).toLocaleString() : "-"}</button>` : `<button class="btn-devendo" onclick="marcarPago(${idx})">Devendo</button>`}
+          ${(usuarioAtual === d.funcionario || usuarioAtual === "Vagner") ? `<button class="btn-excluir" onclick="excluir(${idx})">Excluir</button>` : ""}
+          ${d.removida ? `<div class="info"><em>Motivo: ${d.motivoExclusao || "Não informado"}</em></div>` : ""}
+        `;
+        lista.appendChild(div);
+      });
+      window._exibicaoAtual = exibicao;
+    }
+
+    function iniciarListenerRealtime() {
+      const q = query(collection(db, "dividas"), orderBy("dataDevendo", "desc"));
+      onSnapshot(q, snap => {
+        devedores = [];
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          devedores.push({ id: docSnap.id, ...data });
+        });
+        atualizarLista();
+      });
+    }
+
+    window.adicionarDivida = async function () {
+      const nome = nomeClienteInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      if (!nome || isNaN(valor) || valor <= 0) return alert("Preencha nome e valor corretamente!");
+      await addDoc(collection(db, "dividas"), {
+        nome, valor, funcionario: usuarioAtual, dataDevendo: new Date().toISOString(),
+        pago: false, quemPagou: "", dataPago: "",
+        removida: false, apagadaPorVagner: false, dataApagada: "", motivoExclusao: ""
+      });
+      nomeClienteInput.value = "";
+      valorInput.value = "";
+    };
+
+    window.marcarPago = async function (index) {
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d || d.pago || d.removida) return;
+      await updateDoc(doc(db, "dividas", d.id), {
+        pago: true, quemPagou: usuarioAtual, dataPago: new Date().toISOString()
+      });
+    };
+
+    window.excluir = async function (index) {
+      const d = (window._exibicaoAtual || [])[index];
+      if (!d) return;
+      if (usuarioAtual !== d.funcionario && usuarioAtual !== "Vagner") return alert("Só quem anotou ou o ADM pode excluir.");
+      let motivo = "Excluído pelo ADM Vagner";
+      if (usuarioAtual !== "Vagner") {
+        motivo = prompt("Motivo da exclusão:");
+        if (!motivo || motivo.length > 100) return alert("Motivo inválido.");
+      }
+      await updateDoc(doc(db, "dividas", d.id), {
+        removida: true, apagadaPorVagner: usuarioAtual === "Vagner",
+        dataApagada: new Date().toISOString(), motivoExclusao: motivo
+      });
+    };
   </script>
 </body>
 </html>
